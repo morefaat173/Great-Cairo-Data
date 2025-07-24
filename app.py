@@ -1,35 +1,32 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Cairo & Giza Branch Viewer", layout="wide")
+st.set_page_config(page_title="Branch Data Viewer", layout="wide")
 
-st.title("🏢 Cairo & Giza Branch Viewer")
+st.title("🏢 Branch Data Viewer")
 
-# تحميل ملف Excel
+# Load Excel file
 try:
-    df = pd.read_excel("Cairo_Giza_Data.xlsx")
-    st.success("✅ تم تحميل ملف Cairo_Giza_Data.xlsx بنجاح.")
+    df = pd.read_excel("on.xlsx")
+    st.success("✅ File 'on.xlsx' loaded successfully.")
 except FileNotFoundError:
-    st.error("❌ لم يتم العثور على ملف Excel: Cairo_Giza_Data.xlsx")
+    st.error("❌ File 'on.xlsx' not found.")
     st.stop()
 
-# عرض الجدول الكامل
-st.subheader("📄 جميع البيانات")
+# Display all data
+st.subheader("📋 Full Dataset")
 st.dataframe(df, use_container_width=True)
 
-# --- استخراج أسماء الفروع ---
-branch_col = df.columns[0]  # نفترض أن العمود الأول هو اسم الفرع
-branches = df[branch_col].dropna().unique().tolist()
+# Extract branch names from the first column
+branch_column = df.columns[0]  # First column
+branches = df[branch_column].dropna().unique().tolist()
 
-st.subheader("🧭 اختر فرعًا لعرض تفاصيله")
+st.subheader("🔘 Select a Branch to View Its Data")
 
-# إنشاء أزرار في أعمدة
-cols = st.columns(3)  # عدد الأعمدة (يمكن تغييره)
-
+# Create buttons for each branch
+cols = st.columns(3)  # Split buttons into 3 columns
 for i, branch in enumerate(branches):
-    if cols[i % 3].button(branch):
-        st.markdown(f"### 🏷️ تفاصيل الفرع: `{branch}`")
-        branch_data = df[df[branch_col] == branch]
-
-        # عرض البيانات بشكل عمودي لتكون أسهل في القراءة
-        st.table(branch_data.T)
+    if cols[i % 3].button(str(branch)):
+        st.markdown(f"### 📍 Branch: `{branch}`")
+        branch_data = df[df[branch_column] == branch]
+        st.table(branch_data.T)  # Display transposed for readability
