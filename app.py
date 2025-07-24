@@ -34,15 +34,26 @@ if final_result.shape[1] >= 6:
 date_col_index = 2
 if final_result.shape[1] > date_col_index:
     col_name = final_result.columns[date_col_index]
-    
-    # Try to parse as date
     parsed_dates = pd.to_datetime(final_result[col_name], errors='coerce')
-    
-    # Replace non-dates with 'Total', keep dates as .date()
     final_result[col_name] = [
         d.date() if pd.notnull(d) else "Total"
         for d in parsed_dates
     ]
+
+# Inject custom CSS for styling the dataframe
+st.markdown("""
+    <style>
+    .dataframe th, .dataframe td {
+        text-align: center !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+    .stDataFrame > div {
+        max-height: 800px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Display the final filtered data
 st.subheader("📈 Branch Data")
