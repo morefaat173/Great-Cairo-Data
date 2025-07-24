@@ -10,11 +10,13 @@ try:
     logo = Image.open("images.jpeg")
     st.image(logo, width=200)
 except:
-ث
+    st.warning("⚠️ Logo not found.")
+
 st.title("📊 Great Cairo Delivery Data")
 
 # 📥 Load Excel
-ث
+df = pd.read_excel("on.xlsx")
+
 # 🎯 Select Branches for comparison
 branches = df["Branch Name"].dropna().unique()
 selected_branches = st.multiselect("Choose up to 2 Branches to Compare:", branches, default=branches[:2])
@@ -33,4 +35,18 @@ if len(selected_branches) == 2:
 
     for branch in selected_branches:
         branch_data = comp_df[comp_df["Branch Name"] == branch]
-        ax.plot(branc
+        ax.plot(branch_data["Date"], branch_data["On-Time sign"], label=f"{branch} - On-Time", marker='o')
+        ax.plot(branch_data["Date"], branch_data["Sign"], label=f"{branch} - Sign Rate", marker='s')
+
+    ax.set_title("Branch Comparison Over Time")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Value")
+    ax.legend()
+    ax.grid(True)
+    plt.xticks(rotation=45)
+
+    st.pyplot(fig)
+
+# 🔽 Optional: Show raw data
+if st.checkbox("Show Raw Data Table"):
+    st.dataframe(df, use_container_width=True)
