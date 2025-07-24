@@ -51,4 +51,12 @@ except FileNotFoundError:
 # رسم بياني تفاعلي (لو في أعمدة رقمية)
 numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns.tolist() if 'df' in locals() else []
 
-if numeric_col_
+if numeric_cols:
+    st.subheader("📈 Visualize Numeric Column (from Excel data)")
+    selected_col = st.selectbox("Select a column to visualize", numeric_cols)
+
+    fig, ax = plt.subplots()
+    sns.histplot(df[selected_col], kde=True, ax=ax)
+    st.pyplot(fig)
+else:
+    st.warning("No numeric columns found for plotting.")
