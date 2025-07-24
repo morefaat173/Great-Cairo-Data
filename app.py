@@ -4,48 +4,51 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from PIL import Image
 
-# Page configuration
+# إعداد الصفحة
 st.set_page_config(page_title="Cairo & Giza Data Analysis", layout="wide")
 
-# Load and display logo with title
-logo = Image.open("images.jpeg")
-col1, col2 = st.columns([1, 5])
+# عرض الصورة والشعار
+col1, col2 = st.columns([1, 8])
 with col1:
-    st.image(logo, width=100)
+    try:
+        logo = Image.open("images.jpeg")
+        st.image(logo, width=80)
+    except FileNotFoundError:
+        st.warning("Logo not found!")
+
 with col2:
     st.title("📊 Cairo & Giza Data Analysis")
 
-# Load Excel data
+# ----------------------------
+# تحميل البيانات من ملف Excel
 try:
     df = pd.read_excel("Cairo_Giza_Data.xlsx")
+    st.subheader("📂 Excel File: Cairo_Giza_Data.xlsx")
+    st.dataframe(df, use_container_width=True)
+
+    st.write("**Data Shape:**", df.shape)
+    st.write("**Column Names:**", df.columns.tolist())
+    st.write("**Summary Statistics:**")
+    st.write(df.describe())
 except FileNotFoundError:
-    st.error("❌ File 'Cairo_Giza_Data.xlsx' not found. Please make sure it's uploaded to your repo.")
-    st.stop()
+    st.error("❌ Cairo_Giza_Data.xlsx file not found.")
 
-# Show all data
-st.subheader("📋 Full Dataset")
-st.dataframe(df, use_container_width=True)
+# ----------------------------
+# تحميل البيانات من ملف CSV
+try:
+    df_csv = pd.read_csv("Book1(1).csv")
+    st.subheader("📂 CSV File: Book1(1).csv")
+    st.dataframe(df_csv, use_container_width=True)
 
-# Basic info
-st.subheader("ℹ️ Dataset Info")
-st.write(f"Number of Rows: {df.shape[0]}")
-st.write(f"Number of Columns: {df.shape[1]}")
-st.write("Column Names:")
-st.write(df.columns.tolist())
+    st.write("**Data Shape:**", df_csv.shape)
+    st.write("**Column Names:**", df_csv.columns.tolist())
+    st.write("**Summary Statistics:**")
+    st.write(df_csv.describe())
+except FileNotFoundError:
+    st.error("❌ Book1(1).csv file not found.")
 
-# Descriptive statistics
-st.subheader("📈 Descriptive Statistics")
-st.write(df.describe())
+# ----------------------------
+# رسم بياني تفاعلي (لو في أعمدة رقمية)
+numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns.tolist() if 'df' in locals() else []
 
-# Numeric column selection for plotting
-numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns.tolist()
-if numeric_cols:
-    st.subheader("📊 Plot Column Distribution")
-    selected_col = st.selectbox("Select a numeric column to plot:", numeric_cols)
-
-    fig, ax = plt.subplots()
-    sns.histplot(df[selected_col], kde=True, ax=ax)
-    ax.set_title(f"Distribution of {selected_col}")
-    st.pyplot(fig)
-else:
-    st.warning("⚠️ No numeric columns found to plot.")
+if numeric_col_
