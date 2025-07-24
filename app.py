@@ -28,7 +28,15 @@ if final_result.shape[1] >= 6:
         col_name = final_result.columns[col_index]
         final_result[col_name] = final_result[col_name].apply(
             lambda x: f"{x * 100:.0f}%" if pd.notnull(x) else ""
-        )
+            # Filtered final result
+final_result = filtered_df[filtered_df[second_col] == selected_sub]
+
+# Format date column (e.g., column 3)
+date_col_index = 2
+if final_result.shape[1] > date_col_index:
+    col_name = final_result.columns[date_col_index]
+    final_result[col_name] = pd.to_datetime(final_result[col_name]).dt.date
+
 
 # Display the final filtered data
 st.subheader("📈 Branch Data")
