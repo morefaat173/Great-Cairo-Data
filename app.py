@@ -5,95 +5,66 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🖼️ Display logo
+# 🖼️ عرض اللوجو
 try:
-    logo = Image.open("images.jpeg")  # تأكد أن الصورة في نفس مجلد app.py
+    logo = Image.open("images.jpeg")
     st.image(logo, width=200)
 except FileNotFoundError:
     st.warning("⚠️ Logo image not found.")
 
 st.title("📊 Great Cairo Delivery Data")
 
-# 📥 Load the Excel file
+# 📥 تحميل ملف الإكسل
 df = pd.read_excel("on.xlsx")
 
 first_col = df.columns[0]
 second_col = df.columns[1]
+date_col = df.columns[2]
+on_time_col = df.columns[4]
+sign_rate_col = df.columns[5]
 
-unique_branches = df[first_col].dropna().unique()
+branches = df[first_col].dropna().unique()
+categories = df[second_col].dropna().unique()
 
-# 🔘 Branch selection
-selected_branch = st.selectbox("Choose a Branch:", unique_branches)
-filtered_df = df[df[first_col] == selected_branch]
+# 🔘 اختيار الفرعين للمقارنة
+st.sidebar.header("🔍 Compare Two Branches")
+branch1 = st.sidebar.selectbox("Select First Branch", branches, key="branch1")
+branch2 = st.sidebar.selectbox("Select Second Branch", branches, key="branch2")
 
-# 🔘 Sub-category selection
-second_options = filtered_df[second_col].dropna().unique()
-selected_sub = st.selectbox("Choose a Sub-category:", second_options)
+# 🔘 اختيار نفس التصنيف للفرعين
+common_category = st.sidebar.selectbox("Select Sub-category", categories)
 
-# 🧮 Final filtered data
-final_result = filtered_df[filtered_df[second_col] == selected_sub].copy()
+# 🔍 تصفية البيانات للفرعين
+def prepare_branch_data(branch):
+    sub_df = df[(df[first_col] == branch) & (df[second_col] == common_category)].copy()
+    sub_df[date_col] = pd.to_datetime(sub_df[date_col], errors='coerce')
+    sub_df = sub_df.dropna(subset=[date_col, on_time_col, sign_rate_col])
+    sub_df[date_col] = sub_df[date_col].dt.date
+    sub_df[on_time_col] = pd.to_numeric(sub_df[on_time_col], errors='coerce')
+    sub_df[sign_rate_col] = pd.to_numeric(sub_df[sign_rate_col], errors='coerce')
+    return sub_df.sort_values(by=date_col)
 
-# 🗓️ Format date column (column index 2)
-if final_result.shape[1] > 2:
-    date_col = final_result.columns[2]
-    def format_date(val):
-        try:
-            return pd.to_datetime(val).date()
-        except:
-            return "Total"
-    final_result[date_col] = final_result[date_col].apply(format_date)
+branch1_df = prepare_branch_data(branch1)
+branch2_df = prepare_branch_data(branch2)
 
-# 📊 Format 5th and 6th columns as percentages
-for col_index in [4, 5]:
-    if final_result.shape[1] > col_index:
-        col_name = final_result.columns[col_index]
-        final_result[col_name] = final_result[col_name].apply(
-            lambda x: f"{x * 100:.0f}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
-        )
+# 📊 رسم المقارنة بين الفرعين
+st.subheader(f"📊 Comparison: {branch1} vs {branch2} ({common_category})")
 
-# 🎨 Apply CSS styling for center alignment & bold text
-st.markdown("""
-    <style>
-    thead tr th {text-align: center !important;}
-    tbody tr td {text-align: center !important; font-weight: bold !important;}
-    .dataframe-container {font-size: 18px !important;}
-    </style>
-""", unsafe_allow_html=True)
+fig, ax = plt.subplots(figsize=(12, 6))
 
-# 📈 Show final table
-st.subheader("📈 Branch Data")
-st.dataframe(final_result, use_container_width=True)
+# فرع 1
+ax.plot(branch1_df[date_col], branch1_df[on_time_col] * 100,
+        label=f'{branch1} - On-Time', marker='o', linestyle='-')
+ax.plot(branch1_df[date_col], branch1_df[sign_rate_col] * 100,
+        label=f'{branch1} - Sign Rate', marker='x', linestyle='--')
 
-# ------------------ 📊 CHART COMPARISON -------------------
-# Prepare raw data for plotting
-plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
+# فرع 2
+ax.plot(branch2_df[date_col], branch2_df[on_time_col] * 100,
+        label=f'{branch2} - On-Time', marker='o', linestyle='-', color='green')
+ax.plot(branch2_df[date_col], branch2_df[sign_rate_col] * 100,
+        label=f'{branch2} - Sign Rate', marker='x', linestyle='--', color='orange')
 
-# Convert date column (index 2)
-try:
-    plot_df[plot_df.columns[2]] = pd.to_datetime(plot_df[plot_df.columns[2]], errors='coerce')
-    plot_df = plot_df.dropna(subset=[plot_df.columns[2]])
-    plot_df[plot_df.columns[2]] = plot_df[plot_df.columns[2]].dt.date
-except Exception as e:
-    st.warning("⚠️ Date parsing issue in chart.")
-
-# Drop rows with NaN in the percentage columns
-plot_df = plot_df.dropna(subset=[plot_df.columns[4], plot_df.columns[5]])
-
-# Sort by date
-plot_df = plot_df.sort_values(by=plot_df.columns[2])
-
-# Draw the comparison chart
-st.subheader("📊 Performance Comparison Over Time")
-
-fig, ax = plt.subplots(figsize=(10, 5))
-
-ax.plot(plot_df[plot_df.columns[2]], plot_df[plot_df.columns[4]] * 100,
-        marker='o', label='On-Time sign (%)', color='green')
-
-ax.plot(plot_df[plot_df.columns[2]], plot_df[plot_df.columns[5]] * 100,
-        marker='s', label='Sign Rate (%)', color='blue')
-
-ax.set_title(f"{selected_sub} - On-Time vs Sign Rate")
+ax.set_title("📈 On-Time Sign & Sign Rate Comparison")
 ax.set_xlabel("Date")
 ax.set_ylabel("Percentage (%)")
 ax.legend()
