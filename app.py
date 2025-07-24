@@ -22,21 +22,19 @@ selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 # Filtered final result
 final_result = filtered_df[filtered_df[second_col] == selected_sub]
 
-# Format 5th and 6th columns as percentage if exist
+# Format 5th and 6th columns as percentage if they exist
 if final_result.shape[1] >= 6:
-    for col_index in [4, 5]:  # columns 5 and 6
+    for col_index in [4, 5]:  # 5th and 6th columns (index starts at 0)
         col_name = final_result.columns[col_index]
         final_result[col_name] = final_result[col_name].apply(
             lambda x: f"{x * 100:.0f}%" if pd.notnull(x) else ""
-            # Filtered final result
-final_result = filtered_df[filtered_df[second_col] == selected_sub]
+        )
 
-# Format date column (e.g., column 3)
+# Format 3rd column (date) to show only the date part
 date_col_index = 2
 if final_result.shape[1] > date_col_index:
     col_name = final_result.columns[date_col_index]
     final_result[col_name] = pd.to_datetime(final_result[col_name]).dt.date
-
 
 # Display the final filtered data
 st.subheader("📈 Branch Data")
