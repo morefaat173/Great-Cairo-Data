@@ -23,11 +23,13 @@ selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 final_result = filtered_df[filtered_df[second_col] == selected_sub]
 
 # Format 5th and 6th columns as percentage if exist
+# Format 5th and 6th columns as percentage if exist
 if final_result.shape[1] >= 6:
-    for col_index in [4, 5]:  # 5th and 6th columns (0-based index)
+    for col_index in [4, 5]:  # columns 5 and 6
         col_name = final_result.columns[col_index]
         final_result[col_name] = final_result[col_name].apply(
-            lambda x: f"{x:.0f}%" if pd.notnull(x) else ""
+            lambda x: f"{x * 100:.0f}%" if pd.notnull(x) else ""
+        )
         )
 
 # Display the final filtered data
