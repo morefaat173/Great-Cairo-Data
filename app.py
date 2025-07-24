@@ -11,21 +11,24 @@ unique_branches = df[first_col].dropna().unique()
 
 st.title("📍 Select Branch and Sub-category")
 
+# Branch selection
 selected_branch = st.selectbox("Choose a Branch:", unique_branches)
 filtered_df = df[df[first_col] == selected_branch]
 
+# Sub-category selection
 second_options = filtered_df[second_col].dropna().unique()
 selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 
+# Filtered final result
 final_result = filtered_df[filtered_df[second_col] == selected_sub]
 
-# Format the 5th and 6th columns (index 4 and 5) as percentages
-for col_index in [4, 5]:
-    if final_result.shape[1] > col_index:
+# Format 5th and 6th columns as percentage if exist
+if final_result.shape[1] >= 6:
+    for col_index in [4, 5]:  # 5th and 6th columns (0-based index)
         col_name = final_result.columns[col_index]
         final_result[col_name] = final_result[col_name].apply(
-            lambda x: f"{x * 100:.0f}%" if pd.notnull(x) else ""
+            lambda x: f"{x:.0f}%" if pd.notnull(x) else ""
         )
 
-st.subheader("🔎 Filtered Result")
-st.dataframe(final_result, use_container_width=True)
+# Display the final filtered data
+st.subheader("📈 Branch
