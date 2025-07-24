@@ -19,11 +19,13 @@ selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 
 final_result = filtered_df[filtered_df[second_col] == selected_sub]
 
-# Format 4th column as percentage
-if final_result.shape[1] >= 4:
-    final_result[final_result.columns[3]] = final_result[final_result.columns[3]].apply(
-        lambda x: f"{x:.0f}%" if pd.notnull(x) else ""
-    )
+# Format the 5th and 6th columns (index 4 and 5) as percentages
+for col_index in [4, 5]:
+    if final_result.shape[1] > col_index:
+        col_name = final_result.columns[col_index]
+        final_result[col_name] = final_result[col_name].apply(
+            lambda x: f"{x * 100:.0f}%" if pd.notnull(x) else ""
+        )
 
 st.subheader("🔎 Filtered Result")
 st.dataframe(final_result, use_container_width=True)
