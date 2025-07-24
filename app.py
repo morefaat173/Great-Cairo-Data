@@ -9,7 +9,7 @@ second_col = df.columns[1]
 
 unique_branches = df[first_col].dropna().unique()
 
-st.title("📊Great Cairo Delivery Data")
+st.title("📊 Great Cairo Delivery Data")
 
 # Branch selection
 selected_branch = st.selectbox("Choose a Branch:", unique_branches)
@@ -32,3 +32,4 @@ if final_result.shape[1] >= 6:
 
 # Display the final filtered data
 st.subheader("📈 Branch Data")
+st.dataframe(final_result, use_container_width=True)
