@@ -31,4 +31,4 @@ if final_result.shape[1] >= 6:
         )
 
 # Display the final filtered data
-st.subheader("📈 Branch Data"
+st.subheader("📈 Branch Data")
