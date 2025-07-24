@@ -10,13 +10,11 @@ try:
     logo = Image.open("images.jpeg")
     st.image(logo, width=200)
 except:
-    st.warning("⚠️ Logo not found.")
-
+ث
 st.title("📊 Great Cairo Delivery Data")
 
 # 📥 Load Excel
-df = pd.read_excel("on.xlsx")
-
+ث
 # 🎯 Select Branches for comparison
 branches = df["Branch Name"].dropna().unique()
 selected_branches = st.multiselect("Choose up to 2 Branches to Compare:", branches, default=branches[:2])
