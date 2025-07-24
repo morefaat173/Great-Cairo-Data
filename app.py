@@ -7,7 +7,7 @@ st.title("🏢 Cairo & Giza Branch Viewer")
 
 # تحميل ملف Excel
 try:
-    df = pd.read_excel("Cairo_Giza_Data.xlsx")
+   df = pd.read_csv("Book1(1).csv")
     st.success("✅ تم تحميل ملف Cairo_Giza_Data.xlsx بنجاح.")
 except FileNotFoundError:
     st.error("❌ لم يتم العثور على ملف Excel: Cairo_Giza_Data.xlsx")
