@@ -24,17 +24,25 @@ final_result = filtered_df[filtered_df[second_col] == selected_sub]
 
 # Format 5th and 6th columns as percentage if exist
 if final_result.shape[1] >= 6:
-    for col_index in [4, 5]:  # columns 5 and 6 (0-based index)
+    for col_index in [4, 5]:  # columns 5 and 6
         col_name = final_result.columns[col_index]
         final_result[col_name] = final_result[col_name].apply(
             lambda x: f"{x * 100:.0f}%" if pd.notnull(x) else ""
         )
 
-# Format 3rd column as date (remove time)
+# Format 3rd column as date or 'Total'
 date_col_index = 2
 if final_result.shape[1] > date_col_index:
     col_name = final_result.columns[date_col_index]
-    final_result[col_name] = pd.to_datetime(final_result[col_name], errors='coerce').dt.date
+    
+    # Try to parse as date
+    parsed_dates = pd.to_datetime(final_result[col_name], errors='coerce')
+    
+    # Replace non-dates with 'Total', keep dates as .date()
+    final_result[col_name] = [
+        d.date() if pd.notnull(d) else "Total"
+        for d in parsed_dates
+    ]
 
 # Display the final filtered data
 st.subheader("📈 Branch Data")
