@@ -2,45 +2,50 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from PIL import Image
 
+# Page configuration
 st.set_page_config(page_title="Cairo & Giza Data Analysis", layout="wide")
 
-# --- عنوان مع الشعار ---
-st.markdown(
-    """
-    <div style="display: flex; align-items: center;">
-        <img src="https://raw.githubusercontent.com/morefaat173/Great-Cairo-Data/main/J%26T%20Express%20Logo%20(PNG-480p)%20-%20Vector69Com.png" width="60" style="margin-right: 10px;">
-        <h1 style="margin: 0;">📊 Great Cairo Data Analysis</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# Load and display logo with title
+logo = Image.open("images.jpeg")
+col1, col2 = st.columns([1, 5])
+with col1:
+    st.image(logo, width=100)
+with col2:
+    st.title("📊 Cairo & Giza Data Analysis")
 
-# --- تحميل البيانات ---
-df = pd.read_excel("Cairo_Giza_Data.xlsx")
+# Load Excel data
+try:
+    df = pd.read_excel("Cairo_Giza_Data.xlsx")
+except FileNotFoundError:
+    st.error("❌ File 'Cairo_Giza_Data.xlsx' not found. Please make sure it's uploaded to your repo.")
+    st.stop()
 
-# --- عرض البيانات ---
-st.subheader("🗂️ Raw Data")
-st.dataframe(df)
+# Show all data
+st.subheader("📋 Full Dataset")
+st.dataframe(df, use_container_width=True)
 
-# --- معلومات عامة ---
+# Basic info
 st.subheader("ℹ️ Dataset Info")
-st.write(f"Rows: {df.shape[0]} | Columns: {df.shape[1]}")
-st.write("Columns:")
+st.write(f"Number of Rows: {df.shape[0]}")
+st.write(f"Number of Columns: {df.shape[1]}")
+st.write("Column Names:")
 st.write(df.columns.tolist())
 
-# --- إحصائيات رقمية ---
-st.subheader("📈 Summary Statistics")
+# Descriptive statistics
+st.subheader("📈 Descriptive Statistics")
 st.write(df.describe())
 
-# --- رسم بياني ---
+# Numeric column selection for plotting
 numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns.tolist()
 if numeric_cols:
-    selected_col = st.selectbox("📌 Choose a numeric column to visualize", numeric_cols)
+    st.subheader("📊 Plot Column Distribution")
+    selected_col = st.selectbox("Select a numeric column to plot:", numeric_cols)
 
     fig, ax = plt.subplots()
     sns.histplot(df[selected_col], kde=True, ax=ax)
     ax.set_title(f"Distribution of {selected_col}")
     st.pyplot(fig)
 else:
-    st.warning("No numeric columns found to plot.")
+    st.warning("⚠️ No numeric columns found to plot.")
