@@ -9,7 +9,7 @@ second_col = df.columns[1]
 
 unique_branches = df[first_col].dropna().unique()
 
-st.title("📍 Select Branch and Sub-category")
+st.title("📊Great Cairo Delivery Data")
 
 # Branch selection
 selected_branch = st.selectbox("Choose a Branch:", unique_branches)
