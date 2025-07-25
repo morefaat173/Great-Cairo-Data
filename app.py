@@ -32,12 +32,12 @@ df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
 unique_branches = df[first_col].dropna().unique()
 
 # 🔘 Branch selection
-selected_branch = st.selectbox("Choose a Branch:", unique_branches)
+selected_branch = st.selectbox("Choose area:", unique_branches)
 filtered_df = df[df[first_col] == selected_branch]
 
 # 🔘 Sub-category selection
 second_options = filtered_df[second_col].dropna().unique()
-selected_sub = st.selectbox("Choose a Sub-category:", second_options)
+selected_sub = st.selectbox("Choose a branch:", second_options)
 
 # 📂 Final filtered data
 final_result = filtered_df[filtered_df[second_col] == selected_sub].copy()
