@@ -28,6 +28,7 @@ df = pd.read_excel("on.xlsx")
 first_col = df.columns[0]
 second_col = df.columns[1]
 
+# معالجة التاريخ واستخراج التاريخ فقط
 df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
 df["DateOnly"] = df[df.columns[2]].dt.date
 
@@ -76,39 +77,28 @@ st.markdown("""
 st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
-# --------------------- Compare Shared Sub-categories (Total) ----------------------
+# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
-# استخراج الصفوف التي تحتوي على "Total" فقط
-total_rows = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
+# استخراج الصفوف التي تحتوي على Total فقط
+is_total_row = df[df.columns[2]].astype(str).str.strip().str.lower() == "total"
+total_rows = df[is_total_row]
 
-# اختيار الفروع المتكررة فقط من صفوف Total
-unique_total_branches = total_rows[first_col].unique().tolist()
-selected_total_branches = st.multiselect("✅ Comparison of Repeated Branches (Total Rows Only):", options=unique_total_branches)
+# إيجاد الفروع المكررة التي لها صفوف Total
+duplicate_branches = total_rows[first_col].value_counts()
+duplicate_branches = duplicate_branches[duplicate_branches > 1].index.tolist()
 
-if selected_total_branches:
-    filtered_total_rows = total_rows[total_rows[first_col].isin(selected_total_branches)]
+# فلترة الصفوف بناءً على الفروع المكررة فقط
+filtered_total_duplicates = total_rows[total_rows[first_col].isin(duplicate_branches)]
 
-    # إيجاد التصنيفات (العمود الثاني) المشتركة بين الفروع المحددة
-    shared_subcategories = (
-        filtered_total_rows.groupby(second_col)[first_col]
-        .nunique()
-        .reset_index()
-    )
-    shared_subcategories = shared_subcategories[shared_subcategories[first_col] > 1][second_col].tolist()
-
-    result_df = filtered_total_rows[filtered_total_rows[second_col].isin(shared_subcategories)]
-
-    if not result_df.empty:
-        st.dataframe(result_df, use_container_width=True)
-    else:
-        st.warning("⚠️ No shared sub-categories found across selected branches.")
+if not filtered_total_duplicates.empty:
+    st.dataframe(filtered_total_duplicates, use_container_width=True)
 else:
-    st.info("📌 Please select one or more branches to compare their 'Total' rows.")
+    st.info("No repeated branches with 'Total' rows found.")
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
-with st.expander("📈 Branch Statistics Comparison"):
-    subcategories_to_compare = st.multiselect("Select Branches:", sorted(df[second_col].dropna().unique()))
+with st.expander("📊 Flexible Sub-category Comparison"):
+    subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
         "Receivable Amount": df.columns[3],
