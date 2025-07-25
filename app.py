@@ -99,21 +99,6 @@ if not filtered_total_rows.empty:
 else:
     st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
 
-# 📋 عرض النتيجة
-if not filtered_total_rows.empty:
-    st.markdown("### ✅ الصفوف التي تحتوي على 'Total'")
-    st.dataframe(filtered_total_rows, use_container_width=True)
-else:
-    st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
-
-# ✅ عرض النتائج أو رسالة تنبيه
-if not filtered_total_rows.empty:
-    st.markdown("### 📋 Total Rows for Selected Branches")
-    st.dataframe(filtered_total_rows, use_container_width=True)
-else:
-    st.info("⚠️ No 'Total' rows found for selected branches.")
-
-
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📊 Flexible Sub-category Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
