@@ -66,10 +66,10 @@ st.markdown("""
 st.subheader("📈 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
-# ------------------ 📊 Performance Over Time -------------------
+# ------------------ 📊 Performance Over Time (Transparent Bar Chart) -------------------
 plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
-# Parse dates and filter valid ones
+# Parse dates
 try:
     plot_df[plot_df.columns[2]] = pd.to_datetime(plot_df[plot_df.columns[2]], errors='coerce')
     plot_df = plot_df.dropna(subset=[plot_df.columns[2]])
@@ -77,16 +77,18 @@ try:
 except Exception as e:
     st.warning("⚠️ Issue parsing dates for chart.")
 
-# Drop rows with missing percentage values
+# Drop rows with missing percentages
 plot_df = plot_df.dropna(subset=[plot_df.columns[4], plot_df.columns[5]])
-
-# Sort by date
 plot_df = plot_df.sort_values(by=plot_df.columns[2])
 
-# 🎯 Draw Bar Chart
+# Draw transparent bar chart
 st.subheader("📊 Performance Over Time (Bar Chart)")
 
 fig, ax = plt.subplots(figsize=(12, 6))
+
+# Make background transparent
+fig.patch.set_alpha(0)
+ax.patch.set_alpha(0)
 
 dates = plot_df[plot_df.columns[2]]
 ontime = plot_df[plot_df.columns[4]] * 100
@@ -94,15 +96,16 @@ signrate = plot_df[plot_df.columns[5]] * 100
 bar_width = 0.4
 x = range(len(dates))
 
-# Bars for On-Time and Sign Rate
+# Bars
 ax.bar([i - bar_width/2 for i in x], ontime, width=bar_width, label='On-Time (%)', color='green')
 ax.bar([i + bar_width/2 for i in x], signrate, width=bar_width, label='Sign Rate (%)', color='blue')
 
-# Show values on top
+# Add text labels
 for i in x:
     ax.text(i - bar_width/2, ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8)
     ax.text(i + bar_width/2, signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8)
 
+# Labels and style
 ax.set_xticks(x)
 ax.set_xticklabels(dates, rotation=45)
 ax.set_xlabel("Date")
