@@ -104,6 +104,13 @@ if st.session_state.show_total_rows:
             st.info("ℹ️ اختر فرعًا من القائمة لعرض البيانات.")
     else:
         st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' في البيانات.")
+        # 📊 Format percentages for last two columns
+for col_index in [-2, -1]:
+    if final_result.shape[1] > abs(col_index):
+        col_name = final_result.columns[col_index]
+        final_result[col_name] = final_result[col_name].apply(
+            lambda x: f"{x * 100:.0f}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
+        )
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📊 Flexible Sub-category Comparison"):
