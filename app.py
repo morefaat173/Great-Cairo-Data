@@ -80,18 +80,24 @@ st.dataframe(final_result, use_container_width=True)
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
-# 🔎 استخراج الصفوف التي تحتوي على "Total" في العمود الثالث
-total_condition = df[df.columns[2]].astype(str).str.strip().str.lower() == "total"
-total_rows = df[total_condition]
+# ✅ استخراج الصفوف التي تحتوي على 'Total' فقط (بدقة أكبر)
+total_rows = df[df[df.columns[2]].apply(lambda x: str(x).strip().lower() == "total")]
 
-# 🎯 فلتر لاختيار الفروع
-selected_branches = st.multiselect("🔍 اختر الفروع:", sorted(df[first_col].dropna().unique()))
+# 🔍 فلتر الفروع
+selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", sorted(total_rows[first_col].dropna().unique()))
 
-# ✅ تصفية الصفوف التي تحتوي على "Total" بناءً على الفروع المختارة فقط
+# ✅ تصفية النتائج حسب الفروع
 if selected_branches:
     filtered_total_rows = total_rows[total_rows[first_col].isin(selected_branches)]
 else:
     filtered_total_rows = total_rows.copy()
+
+# ✅ عرض النتائج أو تحذير
+if not filtered_total_rows.empty:
+    st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
+    st.dataframe(filtered_total_rows, use_container_width=True)
+else:
+    st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
 
 # 📋 عرض النتيجة
 if not filtered_total_rows.empty:
