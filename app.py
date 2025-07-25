@@ -68,6 +68,12 @@ for col_index in [3, 4]:
             except:
                 return val
         final_result[col_name] = final_result[col_name].apply(format_percent)
+ # 🎯 تحويل العمود الخامس إلى نسبة مئوية مع الحفاظ على اسمه
+if final_result.shape[1] > 5:
+    fifth_col = final_result.columns[5]
+    final_result[fifth_col] = final_result[fifth_col].apply(
+        lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
+    )       
 
 # 📂 Show table
 st.markdown("""
