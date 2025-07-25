@@ -31,7 +31,7 @@ second_col = df.columns[1]
 
 # ⏰ تحويل التاريخ
 df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
-df["DateOnly"] = df[df.columns[2]].dt.date
+# ❌ إزالة العمود DateOnly من الأصل df["DateOnly"] = df[df.columns[2]].dt.date df = df.drop(columns=["DateOnly"], errors="ignore")
 
 # 🔘 اختيار الفرع والفئة الفرعية
 unique_branches = df[first_col].dropna().unique()
