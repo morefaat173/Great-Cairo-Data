@@ -76,17 +76,13 @@ st.dataframe(final_result, use_container_width=True)
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
-# Identify sub-categories that appear in more than one branch
 total_data = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
 sub_counts = total_data.groupby(second_col)[first_col].nunique()
 shared_subs = sub_counts[sub_counts > 1].index.tolist()
 
 if shared_subs:
     sub_to_compare = st.selectbox("Select a Shared Sub-category:", sorted(shared_subs))
-    compare_data = df[
-        (df[second_col] == sub_to_compare) &
-        (df[df.columns[2]].astype(str).str.strip().str.lower() == "total")
-    ]
+    compare_data = total_data[total_data[second_col] == sub_to_compare]
 
     cockpit_cols = st.columns(3)
 
@@ -136,17 +132,16 @@ with st.expander("📊 Flexible Sub-category Comparison"):
             metric_col = metric_options[metric_choice]
             if not comparison_df.empty:
                 st.markdown(f"### 📌 {metric_choice} Comparison")
-                pivot_df = comparison_df.pivot(index=second_col, columns=first_col, values=metric_col).fillna(0)
+                pivot_df = comparison_df.pivot(index=first_col, columns=second_col, values=metric_col).fillna(0)
 
                 if metric_choice != "Receivable Amount":
                     pivot_df *= 100
 
                 st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
 
-                # Add chart
                 fig, ax = plt.subplots(figsize=(10, 4))
-                pivot_df.T.plot(kind='bar', ax=ax, color=['#8B0000', '#A52A2A', '#B22222', '#CD5C5C'])
-                ax.set_title(f"{metric_choice} by Branch", color='white')
+                pivot_df.plot(kind='bar', ax=ax, color=['#8B0000', '#A52A2A', '#B22222', '#CD5C5C'])
+                ax.set_title(f"{metric_choice} by Sub-category", color='white')
                 ax.set_ylabel("%" if metric_choice != "Receivable Amount" else "Amount", color='white')
                 ax.set_xlabel("Branch", color='white')
                 ax.tick_params(axis='x', labelrotation=45, colors='white')
