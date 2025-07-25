@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🏎t Logo and title text
+# 🏎️t Logo and title text
 try:
     logo = Image.open("images.jpeg")
     col1, col2 = st.columns([1, 5])
@@ -92,7 +92,7 @@ if st.session_state.show_total_rows:
 
     if not total_rows.empty:
         available_branches = sorted(total_rows[total_rows.columns[0]].dropna().unique())
-        selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", available_branches, key="branch_total_selector")
+        selected_branches = st.multiselect("📌 Select branches to show 'Total' rows:", available_branches, key="branch_total_selector")
 
         if selected_branches:
             filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)].copy()
@@ -104,12 +104,12 @@ if st.session_state.show_total_rows:
                         lambda x: f"{x * 100:.0f}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
                     )
 
-            st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
+            st.markdown("### ✅ Total Row Results for Selected Branches")
             st.dataframe(filtered_total_rows, use_container_width=True)
         else:
-            st.info("ℹ️ اختر فرعًا من القائمة لعرض البيانات.")
+            st.info("ℹ️ Please select a branch from the list to show data.")
     else:
-        st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' في البيانات.")
+        st.warning("⚠️ No rows containing 'Total' found in the data.")
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📊 Flexible Sub-category Comparison"):
