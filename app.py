@@ -29,7 +29,7 @@ filtered_df = df[df[first_col] == selected_branch]
 second_options = filtered_df[second_col].dropna().unique()
 selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 
-# 🮢 Final filtered data
+# 🛢 Final filtered data
 final_result = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
 # 🗓️ Format date column
@@ -93,9 +93,10 @@ else:
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
-# Identify shared sub-categories for each first_col value
-grouped = df[df[df.columns[2]].astype(str).str.strip() == "Total"].groupby(first_col)[second_col].apply(set)
-shared_subs = set.intersection(*grouped) if len(grouped) > 1 else set()
+# Identify sub-categories that appear in more than one branch
+total_data = df[df[df.columns[2]].astype(str).str.strip() == "Total"]
+sub_counts = total_data.groupby(second_col)[first_col].nunique()
+shared_subs = sub_counts[sub_counts > 1].index.tolist()
 
 if shared_subs:
     sub_to_compare = st.selectbox("Select a Shared Sub-category:", sorted(shared_subs))
@@ -121,7 +122,7 @@ if shared_subs:
         for _, row in compare_data.iterrows():
             st.markdown(f"**{row[first_col]}:** {row[df.columns[5]] * 100:.0f}%")
 else:
-    st.info("No shared sub-categories found across all branches.")
+    st.info("No shared sub-categories found across multiple branches.")
 
 # --------------------- Performance Over Time Button ----------------------
 if st.button("📊 Show Performance Over Time"):
