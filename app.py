@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🖼️ Logo and title text
+# 🗾️ Logo and title text
 try:
     logo = Image.open("images.jpeg")
     col1, col2 = st.columns([1, 5])
@@ -72,3 +72,45 @@ st.markdown("""
 # 📊 Show table
 st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
+
+# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
+st.subheader("🔄 Compare Shared Sub-categories (Total)")
+
+# Identify sub-categories that appear in more than one branch
+total_data = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
+sub_counts = total_data.groupby(second_col)[first_col].nunique()
+shared_subs = sub_counts[sub_counts > 1].index.tolist()
+
+if shared_subs:
+    sub_to_compare = st.selectbox("Select a Shared Sub-category:", sorted(shared_subs))
+    compare_data = df[
+        (df[second_col] == sub_to_compare) &
+        (df[df.columns[2]].astype(str).str.strip().str.lower() == "total")
+    ]
+
+    cockpit_cols = st.columns(3)
+
+    with cockpit_cols[0]:
+        st.markdown("#### 💰 Receivable Amount")
+        for _, row in compare_data.iterrows():
+            st.markdown(f"<div style='color:white; font-weight:bold'>{row[first_col]} - {row[second_col]}: {row[df.columns[3]]:.2f}</div>", unsafe_allow_html=True)
+
+    with cockpit_cols[1]:
+        st.markdown("#### ⏱️ On-Time")
+        for _, row in compare_data.iterrows():
+            try:
+                percentage = float(row[df.columns[4]]) * 100
+                st.markdown(f"<div style='color:white; font-weight:bold'>{row[first_col]} - {row[second_col]}: {percentage:.0f}%</div>", unsafe_allow_html=True)
+            except:
+                pass
+
+    with cockpit_cols[2]:
+        st.markdown("#### 🖊️ Sign Rate")
+        for _, row in compare_data.iterrows():
+            try:
+                percentage = float(row[df.columns[5]]) * 100
+                st.markdown(f"<div style='color:white; font-weight:bold'>{row[first_col]} - {row[second_col]}: {percentage:.0f}%</div>", unsafe_allow_html=True)
+            except:
+                pass
+else:
+    st.info("No shared sub-categories found across multiple branches.")
