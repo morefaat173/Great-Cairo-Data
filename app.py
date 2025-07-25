@@ -101,12 +101,6 @@ else:
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 if st.button("📊 Flexible Sub-category Comparison"):
-    st.markdown("""
-        <div style='text-align: center; margin-top: 50px;'>
-            <h2 style='color: #8B0000; font-size: 36px; font-weight: bold;'>Flexible Sub-category Comparison</h2>
-        </div>
-    """, unsafe_allow_html=True)
-
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
