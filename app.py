@@ -66,7 +66,7 @@ st.markdown("""
 st.subheader("📈 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
-# ------------------ 📊 Performance Over Time (Transparent Bar Chart) -------------------
+# ------------------ 📊 Performance Over Time (Bar Chart) -------------------
 plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
 # Parse dates
@@ -81,12 +81,12 @@ except Exception as e:
 plot_df = plot_df.dropna(subset=[plot_df.columns[4], plot_df.columns[5]])
 plot_df = plot_df.sort_values(by=plot_df.columns[2])
 
-# Draw transparent bar chart
+# Draw bar chart
 st.subheader("📊 Performance Over Time (Bar Chart)")
 
 fig, ax = plt.subplots(figsize=(12, 6))
 
-# Make background transparent
+# Transparent background
 fig.patch.set_alpha(0)
 ax.patch.set_alpha(0)
 
@@ -96,16 +96,16 @@ signrate = plot_df[plot_df.columns[5]] * 100
 bar_width = 0.4
 x = range(len(dates))
 
-# Bars
-ax.bar([i - bar_width/2 for i in x], ontime, width=bar_width, label='On-Time (%)', color='green')
-ax.bar([i + bar_width/2 for i in x], signrate, width=bar_width, label='Sign Rate (%)', color='blue')
+# Bars with red color
+ax.bar([i - bar_width/2 for i in x], ontime, width=bar_width, label='On-Time (%)', color='red')
+ax.bar([i + bar_width/2 for i in x], signrate, width=bar_width, label='Sign Rate (%)', color='darkred')
 
-# Add text labels
+# White labels on bars
 for i in x:
-    ax.text(i - bar_width/2, ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8)
-    ax.text(i + bar_width/2, signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8)
+    ax.text(i - bar_width/2, ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
+    ax.text(i + bar_width/2, signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
 
-# Labels and style
+# Customize axes
 ax.set_xticks(x)
 ax.set_xticklabels(dates, rotation=45)
 ax.set_xlabel("Date")
