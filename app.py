@@ -56,7 +56,7 @@ if final_result.shape[1] > 2:
             return "Total"
     final_result[date_col] = final_result[date_col].apply(format_date)
 
-# 📊 Format On-Time and Sign Rate as percentages (columns 5 and 6)
+# 📊 Format percentages for last two columns
 for col_index in [-2, -1]:
     if final_result.shape[1] > abs(col_index):
         col_name = final_result.columns[col_index]
@@ -64,11 +64,24 @@ for col_index in [-2, -1]:
             try:
                 num = float(val)
                 if num > 1:
-                    num /= 100  # Assume it's already in % format (e.g., 85 means 85%)
+                    num /= 100
                 return f"{num * 100:.0f}%"
             except:
                 return val
         final_result[col_name] = final_result[col_name].apply(format_percent)
+
+# 💰 Format column 4 as percentage with % symbol
+if final_result.shape[1] > 3:
+    col_4 = final_result.columns[3]
+    def format_col_4(val):
+        try:
+            num = float(val)
+            if num > 1:
+                num /= 100
+            return f"{num * 100:.0f}%"
+        except:
+            return val
+    final_result[col_4] = final_result[col_4].apply(format_col_4)
 
 # 🎨 Table styling
 st.markdown("""
@@ -94,7 +107,7 @@ if st.button("📌 Show Total Rows by Branch"):
 
 if st.session_state.show_total_rows:
     df_raw = pd.read_excel("on.xlsx")
-    total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).str.strip().str.lower() == "total"]
+    total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).strip().str.lower() == "total"]
 
     if not total_rows.empty:
         available_branches = sorted(total_rows[total_rows.columns[0]].dropna().unique())
@@ -106,9 +119,15 @@ if st.session_state.show_total_rows:
             for col_index in [-2, -1]:
                 if filtered_total_rows.shape[1] > abs(col_index):
                     col_name = filtered_total_rows.columns[col_index]
-                    filtered_total_rows[col_name] = filtered_total_rows[col_name].apply(
-                        lambda x: f"{x * 100:.0f}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
-                    )
+                    def format_percent(val):
+                        try:
+                            num = float(val)
+                            if num > 1:
+                                num /= 100
+                            return f"{num * 100:.0f}%"
+                        except:
+                            return val
+                    filtered_total_rows[col_name] = filtered_total_rows[col_name].apply(format_percent)
 
             st.markdown("### ✅ Total Row Results for Selected Branches")
             st.dataframe(filtered_total_rows, use_container_width=True)
