@@ -77,29 +77,32 @@ st.markdown("""
 st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
-# --------------------- Area Data ----------------------
-st.subheader("🌐 Area Data")
+# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
+st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
 if st.button("📌 Show Total Rows by Branch"):
     df_raw = pd.read_excel("on.xlsx")
     total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
-    available_branches = sorted(total_rows[df_raw.columns[0]].dropna().unique())
-    selected_branches = st.multiselect("Select area :", available_branches)
+    if not total_rows.empty:
+        available_branches = sorted(total_rows[total_rows.columns[0]].dropna().unique())
+        selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", available_branches)
 
-    if selected_branches:
-        filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)]
+        if selected_branches:
+            filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)]
+        else:
+            filtered_total_rows = pd.DataFrame()
+
+        if not filtered_total_rows.empty:
+            st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
+            st.dataframe(filtered_total_rows, use_container_width=True)
+        else:
+            st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
     else:
-        filtered_total_rows = total_rows.copy()
+        st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' في البيانات.")
 
-    if not filtered_total_rows.empty:
-        st.markdown("### 🔹 Aggregated Comparison of Area Branches")
-        st.dataframe(filtered_total_rows, use_container_width=True)
-    else:
-        st.warning("⚠️  'Total'.")
-
-# ---------------------  Branch Statistics Comparison Button ----------------------
-with st.expander("📈 Branch Statistics Comparison"):
+# --------------------- Flexible Sub-category Comparison Button ----------------------
+with st.expander("📊 Flexible Sub-category Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
@@ -137,7 +140,6 @@ with st.expander("📈 Branch Statistics Comparison"):
                 else:
                     st.dataframe(pivot_df.reset_index().style.format({metric_col: "{:.2f}"}))
 
-                # رسم بياني بسيط للعرض
                 st.markdown(":bar_chart: Chart View")
                 fig, ax = plt.subplots(figsize=(12, 6))
                 pivot_df.unstack().plot(kind='bar', ax=ax, color=['#8B0000', '#5A0000'])
