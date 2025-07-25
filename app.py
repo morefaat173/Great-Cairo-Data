@@ -77,37 +77,15 @@ st.dataframe(final_result, use_container_width=True)
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
 total_data = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
+
+# استخراج كل التصنيفات المشتركة
 sub_counts = total_data.groupby(second_col)[first_col].nunique()
 shared_subs = sub_counts[sub_counts > 1].index.tolist()
+compare_data = total_data[total_data[second_col].isin(shared_subs)]
 
-if shared_subs:
-    sub_to_compare = st.selectbox("Select a Shared Sub-category:", sorted(shared_subs))
-    compare_data = total_data[total_data[second_col] == sub_to_compare]
-
-    cockpit_cols = st.columns(3)
-
-    with cockpit_cols[0]:
-        st.markdown("#### 💰 Receivable Amount")
-        for _, row in compare_data.iterrows():
-            st.markdown(f"<div style='color:white; font-weight:bold'>{row[first_col]} - {row[second_col]}: {row[df.columns[3]]:.2f}</div>", unsafe_allow_html=True)
-
-    with cockpit_cols[1]:
-        st.markdown("#### ⏱️ On-Time")
-        for _, row in compare_data.iterrows():
-            try:
-                percentage = float(row[df.columns[4]]) * 100
-                st.markdown(f"<div style='color:white; font-weight:bold'>{row[first_col]} - {row[second_col]}: {percentage:.0f}%</div>", unsafe_allow_html=True)
-            except:
-                pass
-
-    with cockpit_cols[2]:
-        st.markdown("#### 🖊️ Sign Rate")
-        for _, row in compare_data.iterrows():
-            try:
-                percentage = float(row[df.columns[5]]) * 100
-                st.markdown(f"<div style='color:white; font-weight:bold'>{row[first_col]} - {row[second_col]}: {percentage:.0f}%</div>", unsafe_allow_html=True)
-            except:
-                pass
+if not compare_data.empty:
+    st.markdown("### ✅ Comparison of Shared Sub-categories Across Branches (Total Rows Only)")
+    st.dataframe(compare_data, use_container_width=True)
 else:
     st.info("No shared sub-categories found across multiple branches.")
 
