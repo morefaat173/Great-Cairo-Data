@@ -90,7 +90,7 @@ else:
     st.info("Please select one or more branches to compare their 'Total' rows.")
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
-with st.expander("📊 Flexible Sub-category Comparison"):
+with st.expander("📊 Branch Performance Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
