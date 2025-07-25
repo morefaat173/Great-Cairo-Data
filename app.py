@@ -28,17 +28,11 @@ df = pd.read_excel("on.xlsx")
 first_col = df.columns[0]
 second_col = df.columns[1]
 
-# معالجة التاريخ واستخراج التاريخ فقط
-df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
-df["DateOnly"] = df[df.columns[2]].dt.date
-
-unique_branches = df[first_col].dropna().unique()
-
 # 🔘 Branch selection
 selected_branch = st.selectbox("Choose a Branch:", unique_branches)
 filtered_df = df[df[first_col] == selected_branch]
 
-# 🔘 Sub-category selection
+# 🔘 Sub-category selectio
 second_options = filtered_df[second_col].dropna().unique()
 selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 
