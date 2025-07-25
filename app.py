@@ -78,9 +78,11 @@ st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
 total_data = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
-# استخراج كل التصنيفات المشتركة
-sub_counts = total_data.groupby(second_col)[first_col].nunique()
-shared_subs = sub_counts[sub_counts > 1].index.tolist()
+# تجميع كل التصنيفات والعدد المرتبط بكل تصنيف
+shared_sub_data = total_data.groupby(second_col)[first_col].nunique()
+shared_subs = shared_sub_data[shared_sub_data > 1].index.tolist()
+
+# عرض جميع الصفوف المرتبطة بالتصنيفات المشتركة
 compare_data = total_data[total_data[second_col].isin(shared_subs)]
 
 if not compare_data.empty:
