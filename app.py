@@ -29,7 +29,7 @@ filtered_df = df[df[first_col] == selected_branch]
 second_options = filtered_df[second_col].dropna().unique()
 selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 
-# 🛢 Final filtered data
+# 📂 Final filtered data
 final_result = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
 # 🗓️ Format date column
@@ -64,7 +64,7 @@ st.subheader("📈 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Cockpit Comparison by Total ----------------------
-st.subheader("🧽 Branch Comparison Cockpit")
+st.subheader("🧙 Branch Comparison Cockpit")
 
 total_rows = df[df[df.columns[2]].astype(str).str.strip() == "Total"].copy()
 selected_branches = st.multiselect("Select Branches to Compare:", df[first_col].dropna().unique())
