@@ -31,7 +31,6 @@ second_col = df.columns[1]
 
 # ⏰ تحويل التاريخ
 df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
-# ❌ إزالة العمود DateOnly من الأصل df["DateOnly"] = df[df.columns[2]].dt.date df = df.drop(columns=["DateOnly"], errors="ignore")
 
 # 🔘 اختيار الفرع والفئة الفرعية
 unique_branches = df[first_col].dropna().unique()
@@ -47,26 +46,26 @@ final_result = filtered_df[filtered_df[second_col] == selected_sub].copy()
 # 🗓️ تنسيق التاريخ
 if final_result.shape[1] > 2:
     date_col = final_result.columns[2]
-    final_result[date_col] = final_result[date_col].apply(lambda x: pd.to_datetime(x).strftime('%Y-%m-%d') if pd.notnull(x) else "Total")
+    final_result[date_col] = final_result[date_col].apply(
+        lambda x: pd.to_datetime(x).strftime('%Y-%m-%d') if pd.notnull(x) else "Total"
+    )
 
-# 🎯 تحويل الأعمدة إلى نسب مئوية (الرابع وقبله اثنين)
+# 🎯 تحويل الأعمدة إلى نسب مئوية
 percent_columns = [3, -2, -1]
 for col_index in percent_columns:
     if final_result.shape[1] > abs(col_index):
         col_name = final_result.columns[col_index]
         final_result[col_name] = final_result[col_name].apply(
-            lambda x: f"{float(x)/100*100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
-        )
-        # 🎯 تحويل قيم العمود "On-Time" و "Sign Rate" إلى نسب مئوية
-columns_to_convert = ["On-Time", "Sign Rate"]
-
-for col in columns_to_convert:
-    if col in final_result.columns:
-        final_result[col] = final_result[col].apply(
             lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
         )
 
-# 🎨 تنسيق جدول العرض
+# 🧾 تغيير أسماء الأعمدة لو حبيت تضيفهم يدويًا
+final_result = final_result.rename(columns={
+    final_result.columns[4]: "On-Time",
+    final_result.columns[5]: "Sign Rate"
+})
+
+# 🎨 تنسيق عرض الجدول
 st.markdown("""
     <style>
     thead tr th {text-align: center !important; color: white; background-color: #8B0000;}
@@ -75,6 +74,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# 📊 عرض جدول البيانات
 st.subheader("📊 Branch Data")
-final_result = final_result.drop(columns=["DateOnly"], errors="ignore")
 st.dataframe(final_result, use_container_width=True)
