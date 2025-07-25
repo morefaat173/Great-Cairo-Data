@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🎾️ Logo and title text
+# 🏎t Logo and title text
 try:
     logo = Image.open("images.jpeg")
     col1, col2 = st.columns([1, 5])
@@ -95,12 +95,17 @@ if st.session_state.show_total_rows:
         selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", available_branches, key="branch_total_selector")
 
         if selected_branches:
-            filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)]
-            if not filtered_total_rows.empty:
-                st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
-                st.dataframe(filtered_total_rows, use_container_width=True)
-            else:
-                st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
+            filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)].copy()
+
+            for col_index in [-2, -1]:
+                if filtered_total_rows.shape[1] > abs(col_index):
+                    col_name = filtered_total_rows.columns[col_index]
+                    filtered_total_rows[col_name] = filtered_total_rows[col_name].apply(
+                        lambda x: f"{x * 100:.0f}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
+                    )
+
+            st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
+            st.dataframe(filtered_total_rows, use_container_width=True)
         else:
             st.info("ℹ️ اختر فرعًا من القائمة لعرض البيانات.")
     else:
