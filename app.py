@@ -81,7 +81,9 @@ st.dataframe(final_result, use_container_width=True)
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
 # ✅ استخراج الصفوف التي تحتوي على 'Total' بشكل مرن (مع تجاهل المسافات والحروف الكبيرة)
-total_mask = df[df.columns[2]].astype(str).str.strip().str.lower() == "total"
+# ✅ استخراج صفوف 'Total' من النسخة الأصلية للبيانات قبل تحويل العمود لتاريخ
+raw_df = pd.read_excel("on.xlsx")  # إعادة تحميل البيانات الأصلية
+total_rows = raw_df[raw_df[raw_df.columns[2]].astype(str).str.strip().str.lower() == "total"]
 total_rows = df[total_mask].copy()
 
 # 🔍 فلتر الفروع
