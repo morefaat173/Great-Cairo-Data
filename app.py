@@ -92,6 +92,7 @@ if selected_total_branches:
 else:
     st.info("Please select one or more branches to compare their 'Total' rows.")
 
+
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📈 Branch Statistics Comparison"):
     subcategories_to_compare = st.multiselect("Select Branches:", sorted(df[second_col].dropna().unique()))
