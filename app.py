@@ -69,20 +69,7 @@ for col_index in [-2, -1]:
                 return val
         final_result[col_name] = final_result[col_name].apply(format_percent)
 
-# 💰 Format column 4 as percentage with % symbol
-if final_result.shape[1] > 3:
-    col_4 = final_result.columns[3]
-    def format_col_4(val):
-        try:
-            num = float(val)
-            if num > 1:
-                num /= 100
-            return f"{num * 100:.0f}%"
-        except:
-            return val
-    final_result[col_4] = final_result[col_4].apply(format_col_4)
-
-# 🎨 Table styling
+# 📂 Show table
 st.markdown("""
     <style>
     thead tr th {text-align: center !important; color: white; background-color: #8B0000;}
