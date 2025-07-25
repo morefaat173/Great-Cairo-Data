@@ -5,10 +5,16 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🖼️ Logo
+# 🖼️ Logo and title text
 try:
     logo = Image.open("images.jpeg")
-    st.image(logo, width=200)
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        st.image(logo, width=200)
+    with col2:
+        st.markdown("""
+        <h1 style='color: #8B0000; margin-top: 55px;'>J&T Express Egypt Great Cairo RG</h1>
+        """, unsafe_allow_html=True)
 except FileNotFoundError:
     st.warning("⚠️ Logo not found.")
 
@@ -93,7 +99,6 @@ else:
 # --------------------- Flexible Sub-category Comparison ----------------------
 st.subheader("🔁 Flexible Sub-category Comparison")
 
-branches_to_compare = st.multiselect("Select Branches:", sorted(df[first_col].dropna().unique()))
 subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
 metric_options = {
@@ -104,9 +109,8 @@ metric_options = {
 metric_choice = st.selectbox("Choose Metric to Compare:", list(metric_options.keys()))
 metric_col = metric_options[metric_choice]
 
-if branches_to_compare and subcategories_to_compare:
+if subcategories_to_compare:
     filtered = df[
-        df[first_col].isin(branches_to_compare) &
         df[second_col].isin(subcategories_to_compare) &
         (df[df.columns[2]].astype(str).str.strip() == "Total")
     ]
