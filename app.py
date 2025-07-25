@@ -118,8 +118,7 @@ with st.expander("📊 Flexible Sub-category Comparison"):
                 st.markdown(f"### 📌 {metric_choice} Comparison by Date")
 
                 pivot_df = comparison_df.pivot_table(
-                    index=first_col,
-                    columns=[second_col, "DateOnly"],
+                    index=[second_col, "DateOnly"],
                     values=metric_col,
                     aggfunc="mean"
                 ).fillna(0)
@@ -127,13 +126,13 @@ with st.expander("📊 Flexible Sub-category Comparison"):
                 if metric_choice != "Receivable Amount":
                     pivot_df *= 100
 
-                st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
+                st.dataframe(pivot_df.reset_index().style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
 
                 # رسم بياني بسيط للعرض
                 st.markdown(":bar_chart: Chart View")
                 fig, ax = plt.subplots(figsize=(12, 6))
-                pivot_df.T.plot(kind='bar', ax=ax, color=['#8B0000', '#5A0000'])
-                ax.set_title(f"{metric_choice} by Branch and Date", color='white')
+                pivot_df.unstack().plot(kind='bar', ax=ax, color=['#8B0000', '#5A0000'])
+                ax.set_title(f"{metric_choice} by Sub-category and Date", color='white')
                 ax.set_xlabel("Sub-category & Date", color='white')
                 ax.set_ylabel("%" if metric_choice != "Receivable Amount" else "Amount", color='white')
                 ax.tick_params(axis='x', labelrotation=45, colors='white')
