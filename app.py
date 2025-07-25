@@ -126,7 +126,10 @@ with st.expander("📊 Flexible Sub-category Comparison"):
                 if metric_choice != "Receivable Amount":
                     pivot_df *= 100
 
-                st.dataframe(pivot_df.reset_index().style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
+                if metric_choice != "Receivable Amount":
+                    st.dataframe(pivot_df.reset_index().style.format({metric_col: "{:.0f}"}))
+                else:
+                    st.dataframe(pivot_df.reset_index().style.format({metric_col: "{:.2f}"}))
 
                 # رسم بياني بسيط للعرض
                 st.markdown(":bar_chart: Chart View")
