@@ -21,7 +21,7 @@ try:
 except FileNotFoundError:
     st.warning("⚠️ Logo not found.")
 
-st.title("📅 Branches Data")
+st.title("📊 Great Cairo Delivery Data")
 
 # 💕 Load Data
 df = pd.read_excel("on.xlsx")
@@ -74,14 +74,14 @@ st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
-st.subheader("🌐 Area Data)")
+st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
 # استخراج الصفوف التي تحتوي على Total فقط
 total_rows = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
 # استخراج أسماء الفروع الفريدة من صفوف Total
 unique_total_branches = total_rows[first_col].unique().tolist()
-selected_total_branches = st.multiselect("🔴 Aggregated Comparison of Area Branches):", options=unique_total_branches)
+selected_total_branches = st.multiselect("✅ Comparison of Repeated Branches (Total Rows Only):", options=unique_total_branches)
 
 if selected_total_branches:
     filtered_total_rows = total_rows[total_rows[first_col].isin(selected_total_branches)]
@@ -90,7 +90,7 @@ else:
     st.info("Please select one or more branches to compare their 'Total' rows.")
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
-with st.expander("📈Branch Statistics Comparison"):
+with st.expander("📊 Flexible Sub-category Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
@@ -132,7 +132,7 @@ with st.expander("📈Branch Statistics Comparison"):
                 st.warning("No matching data found for selected filters.")
 
 # --------------------- Performance Over Time Button ----------------------
-if st.button("📊 Branch performance overview"):
+if st.button("📊 Branch Performance Comparison"):
     plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
     try:
@@ -152,24 +152,20 @@ if st.button("📊 Branch performance overview"):
     dates = plot_df[plot_df.columns[2]]
     ontime = plot_df[plot_df.columns[4]] * 100
     signrate = plot_df[plot_df.columns[5]] * 100
-    bar_width = 0.4
-    x = range(len(dates))
 
-    ax.bar([i - bar_width/2 for i in x], ontime, width=bar_width, label='On-Time (%)', color='#8B0000')
-    ax.bar([i + bar_width/2 for i in x], signrate, width=bar_width, label='Sign Rate (%)', color='#5A0000')
+    ax.plot(dates, ontime, marker='o', linestyle='-', color='#8B0000', label='On-Time (%)')
+    ax.plot(dates, signrate, marker='s', linestyle='--', color='#5A0000', label='Sign Rate (%)')
 
-    for i in x:
-        ax.text(i - bar_width/2, ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
-        ax.text(i + bar_width/2, signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
+    for i in range(len(dates)):
+        ax.text(dates.iloc[i], ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
+        ax.text(dates.iloc[i], signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
 
-    ax.set_xticks(x)
-    ax.set_xticklabels(dates, rotation=45, color='white')
     ax.set_xlabel("Date", color='white')
     ax.set_ylabel("Percentage (%)", color='white')
-    ax.set_title(f"{selected_sub} - On-Time vs Sign Rate", color='white')
+    ax.set_title(f"{selected_sub} - On-Time & Sign Rate Over Time", color='white')
     ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
     ax.grid(True, axis='y', alpha=0.2)
-    ax.tick_params(axis='x', colors='white')
+    ax.tick_params(axis='x', rotation=45, colors='white')
     ax.tick_params(axis='y', colors='white')
 
     st.pyplot(fig)
