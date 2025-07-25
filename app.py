@@ -23,7 +23,7 @@ except FileNotFoundError:
 
 st.title("📊 Great Cairo Delivery Data")
 
-# 🗕️ Load Data
+# 💕 Load Data
 df = pd.read_excel("on.xlsx")
 first_col = df.columns[0]
 second_col = df.columns[1]
@@ -103,7 +103,7 @@ else:
 if st.button("📊 Flexible Sub-category Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
-    available_dates = df[df.columns[2]].astype(str).dropna().unique()
+    available_dates = df[df.columns[2]].dropna().astype(str).unique()
     selected_date = st.selectbox("Select Date or 'Total' for Comparison:", sorted(available_dates))
 
     metric_options = {
@@ -125,18 +125,12 @@ if st.button("📊 Flexible Sub-category Comparison"):
             for metric_choice in metric_choices:
                 st.markdown(f"### 📌 {metric_choice} on {selected_date}")
                 metric_col = metric_options[metric_choice]
-                pivot_df = comparison_df.pivot(index=second_col, columns=first_col, values=metric_col).fillna(0)
+                pivot_df = comparison_df.pivot_table(index=second_col, columns=first_col, values=metric_col, aggfunc='first').fillna(0)
 
                 if metric_choice != "Receivable Amount":
                     pivot_df *= 100
 
-                cols = st.columns(len(pivot_df.columns))
-                for i, branch in enumerate(pivot_df.columns):
-                    with cols[i]:
-                        st.markdown(f"**{branch}**")
-                        for subcat, val in pivot_df[branch].items():
-                            value_display = f"{val:.0f}%" if metric_choice != "Receivable Amount" else f"{val:.2f}"
-                            st.markdown(f"{subcat}: **{value_display}**")
+                st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
 
 # --------------------- Performance Over Time Button ----------------------
 if st.button("📊 Show Performance Over Time"):
