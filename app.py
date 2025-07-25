@@ -28,11 +28,17 @@ df = pd.read_excel("on.xlsx")
 first_col = df.columns[0]
 second_col = df.columns[1]
 
+# معالجة التاريخ واستخراج التاريخ فقط
+df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
+df["DateOnly"] = df[df.columns[2]].dt.date
+
+unique_branches = df[first_col].dropna().unique()
+
 # 🔘 Branch selection
 selected_branch = st.selectbox("Choose a Branch:", unique_branches)
 filtered_df = df[df[first_col] == selected_branch]
 
-# 🔘 Sub-category selectio
+# 🔘 Sub-category selection
 second_options = filtered_df[second_col].dropna().unique()
 selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 
@@ -104,13 +110,6 @@ if st.session_state.show_total_rows:
             st.info("ℹ️ اختر فرعًا من القائمة لعرض البيانات.")
     else:
         st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' في البيانات.")
-        # 📊 Format percentages for last two columns
-for col_index in [-2, -1]:
-    if final_result.shape[1] > abs(col_index):
-        col_name = final_result.columns[col_index]
-        final_result[col_name] = final_result[col_name].apply(
-            lambda x: f"{x * 100:.0f}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
-        )
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📊 Flexible Sub-category Comparison"):
