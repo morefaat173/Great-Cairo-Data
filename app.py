@@ -103,6 +103,9 @@ else:
 if st.button("📊 Flexible Sub-category Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
+    available_dates = df[df.columns[2]].astype(str).dropna().unique()
+    selected_date = st.selectbox("Select Date or 'Total' for Comparison:", sorted(available_dates))
+
     metric_options = {
         "Receivable Amount": df.columns[3],
         "On-Time": df.columns[4],
@@ -110,24 +113,30 @@ if st.button("📊 Flexible Sub-category Comparison"):
     }
     metric_choices = st.multiselect("Choose Metrics to Compare:", list(metric_options.keys()))
 
-    if subcategories_to_compare and metric_choices:
+    if subcategories_to_compare and selected_date and metric_choices:
         comparison_df = df[
             df[second_col].isin(subcategories_to_compare) &
-            (df[df.columns[2]].astype(str).str.strip() == "Total")
+            (df[df.columns[2]].astype(str).str.strip() == str(selected_date).strip())
         ]
 
-        for metric_choice in metric_choices:
-            metric_col = metric_options[metric_choice]
-            if not comparison_df.empty:
-                st.markdown(f"### 📌 {metric_choice} Comparison")
+        if comparison_df.empty:
+            st.warning("No data found for the selected filters.")
+        else:
+            for metric_choice in metric_choices:
+                st.markdown(f"### 📌 {metric_choice} on {selected_date}")
+                metric_col = metric_options[metric_choice]
                 pivot_df = comparison_df.pivot(index=second_col, columns=first_col, values=metric_col).fillna(0)
 
                 if metric_choice != "Receivable Amount":
                     pivot_df *= 100
 
-                st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
-            else:
-                st.warning("No matching data found for selected filters.")
+                cols = st.columns(len(pivot_df.columns))
+                for i, branch in enumerate(pivot_df.columns):
+                    with cols[i]:
+                        st.markdown(f"**{branch}**")
+                        for subcat, val in pivot_df[branch].items():
+                            value_display = f"{val:.0f}%" if metric_choice != "Receivable Amount" else f"{val:.2f}"
+                            st.markdown(f"{subcat}: **{value_display}**")
 
 # --------------------- Performance Over Time Button ----------------------
 if st.button("📊 Show Performance Over Time"):
