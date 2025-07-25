@@ -14,7 +14,7 @@ except FileNotFoundError:
 
 st.title("📊 Great Cairo Delivery Data")
 
-# 📅 Load Data
+# 🗕️ Load Data
 df = pd.read_excel("on.xlsx")
 first_col = df.columns[0]
 second_col = df.columns[1]
@@ -29,7 +29,7 @@ filtered_df = df[df[first_col] == selected_branch]
 second_options = filtered_df[second_col].dropna().unique()
 selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 
-# 🩲 Final filtered data
+# 🮢 Final filtered data
 final_result = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
 # 🗓️ Format date column
@@ -64,7 +64,7 @@ st.subheader("📈 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Cockpit Comparison by Total ----------------------
-st.subheader("🧭 Branch Comparison Cockpit")
+st.subheader("🧽 Branch Comparison Cockpit")
 
 total_rows = df[df[df.columns[2]].astype(str).str.strip() == "Total"].copy()
 selected_branches = st.multiselect("Select Branches to Compare:", df[first_col].dropna().unique())
@@ -89,3 +89,36 @@ if selected_branches:
             st.markdown(f"**{row[first_col]} - {row[second_col]}:** {row[df.columns[5]] * 100:.0f}%")
 else:
     st.info("Please select one or more branches to compare.")
+
+# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
+st.subheader("🔄 Compare Shared Sub-categories (Total)")
+
+# Identify shared sub-categories for each first_col value
+grouped = df[df[df.columns[2]].astype(str).str.strip() == "Total"].groupby(first_col)[second_col].apply(set)
+shared_subs = set.intersection(*grouped) if len(grouped) > 1 else set()
+
+if shared_subs:
+    sub_to_compare = st.selectbox("Select a Shared Sub-category:", sorted(shared_subs))
+    compare_data = df[
+        (df[second_col] == sub_to_compare) &
+        (df[df.columns[2]].astype(str).str.strip() == "Total")
+    ]
+
+    cockpit_cols = st.columns(3)
+
+    with cockpit_cols[0]:
+        st.markdown("#### Receivable Amount")
+        for _, row in compare_data.iterrows():
+            st.markdown(f"**{row[first_col]}:** {row[df.columns[3]]:.2f}")
+
+    with cockpit_cols[1]:
+        st.markdown("#### On-Time")
+        for _, row in compare_data.iterrows():
+            st.markdown(f"**{row[first_col]}:** {row[df.columns[4]] * 100:.0f}%")
+
+    with cockpit_cols[2]:
+        st.markdown("#### Sign Rate")
+        for _, row in compare_data.iterrows():
+            st.markdown(f"**{row[first_col]}:** {row[df.columns[5]] * 100:.0f}%")
+else:
+    st.info("No shared sub-categories found across all branches.")
