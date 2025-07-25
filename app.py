@@ -13,7 +13,10 @@ try:
         st.image(logo, width=200)
     with col2:
         st.markdown("""
-        <h1 style='color: #8B0000; margin-top: 55px;'>J&T Express Egypt Great Cairo RG</h1>
+        <div style='text-align: center; margin-top: 30px;'>
+            <h1 style='color: #8B0000; font-size: 50px; font-weight: bold; line-height: 55px; margin: 0;'>J&amp;T Express Egypt</h1>
+            <h2 style='color: #8B0000; font-size: 32px; font-weight: bold; margin: 0;'>Great Cairo RG</h2>
+        </div>
         """, unsafe_allow_html=True)
 except FileNotFoundError:
     st.warning("⚠️ Logo not found.")
