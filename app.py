@@ -99,8 +99,8 @@ if selected_branches:
 else:
     st.info("Please select one or more branches to compare.")
 
-# --------------------- Flexible Sub-category Comparison Button ----------------------
-if st.button("📊 Flexible Sub-category Comparison"):
+# --------------------- Flexible Sub-category Comparison Section ----------------------
+with st.expander("📊 Flexible Sub-category Comparison", expanded=False):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     available_dates = df[df.columns[2]].dropna().astype(str).unique()
