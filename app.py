@@ -90,8 +90,8 @@ else:
     st.info("Please select one or more branches to compare their 'Total' rows.")
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
-with st.expander("📈 Branch Statistics Comparison"):
-    subcategories_to_compare = st.multiselect("Select Branch:", sorted(df[second_col].dropna().unique()))
+with st.expander("📊 Flexible Sub-category Comparison"):
+    subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
         "Receivable Amount": df.columns[3],
@@ -100,34 +100,27 @@ with st.expander("📈 Branch Statistics Comparison"):
     }
     metric_choices = st.multiselect("Choose Metrics to Compare:", list(metric_options.keys()))
 
-    if subcategories_to_compare and metric_choices:
+    date_filter_column = df.columns[2]
+    df[date_filter_column] = pd.to_datetime(df[date_filter_column], errors='coerce')
+    unique_dates = df[date_filter_column].dropna().dt.date.unique()
+    selected_dates = st.multiselect("Select Dates for Comparison:", sorted(unique_dates))
+
+    if subcategories_to_compare and metric_choices and selected_dates:
         comparison_df = df[
             df[second_col].isin(subcategories_to_compare) &
-            (df[df.columns[2]].astype(str).str.strip().str.lower() == "total")
+            (df[date_filter_column].dt.date.isin(selected_dates))
         ]
 
         for metric_choice in metric_choices:
             metric_col = metric_options[metric_choice]
             if not comparison_df.empty:
-                st.markdown(f"### 📌 {metric_choice} Comparison")
-                pivot_df = comparison_df.pivot(index=first_col, columns=second_col, values=metric_col).fillna(0)
+                st.markdown(f"### 📌 {metric_choice} Comparison by Date")
+                pivot_df = comparison_df.pivot_table(index=first_col, columns=[second_col, date_filter_column.dt.date], values=metric_col).fillna(0)
 
                 if metric_choice != "Receivable Amount":
                     pivot_df *= 100
 
                 st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
-
-                fig, ax = plt.subplots(figsize=(10, 4))
-                pivot_df.plot(kind='bar', ax=ax, color=['#8B0000', '#A52A2A', '#B22222', '#CD5C5C'])
-                ax.set_title(f"{metric_choice} by Sub-category", color='white')
-                ax.set_ylabel("%" if metric_choice != "Receivable Amount" else "Amount", color='white')
-                ax.set_xlabel("Branch", color='white')
-                ax.tick_params(axis='x', labelrotation=45, colors='white')
-                ax.tick_params(axis='y', colors='white')
-                ax.legend(title="Sub-category", title_fontsize='10', labelcolor='white', facecolor='black')
-                fig.patch.set_alpha(0)
-                ax.patch.set_alpha(0)
-                st.pyplot(fig)
             else:
                 st.warning("No matching data found for selected filters.")
 
