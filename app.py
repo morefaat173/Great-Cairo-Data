@@ -5,18 +5,17 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🖼️ Display logo
+# 🖼️ Logo
 try:
-    logo = Image.open("images.jpeg")  # Ensure image is in the same directory
+    logo = Image.open("images.jpeg")
     st.image(logo, width=200)
 except FileNotFoundError:
-    st.warning("⚠️ Logo image not found.")
+    st.warning("⚠️ Logo not found.")
 
 st.title("📊 Great Cairo Delivery Data")
 
-# 📥 Load Excel file
+# 📥 Load Data
 df = pd.read_excel("on.xlsx")
-
 first_col = df.columns[0]
 second_col = df.columns[1]
 
@@ -30,22 +29,20 @@ filtered_df = df[df[first_col] == selected_branch]
 second_options = filtered_df[second_col].dropna().unique()
 selected_sub = st.selectbox("Choose a Sub-category:", second_options)
 
-# 🧮 Filtered data
+# 🧮 Final filtered data
 final_result = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
 # 🗓️ Format date column
 if final_result.shape[1] > 2:
     date_col = final_result.columns[2]
-
     def format_date(val):
         try:
             return pd.to_datetime(val).date()
         except:
             return "Total"
-
     final_result[date_col] = final_result[date_col].apply(format_date)
 
-# 📊 Format percentage columns
+# 📊 Format percentages
 for col_index in [4, 5]:
     if final_result.shape[1] > col_index:
         col_name = final_result.columns[col_index]
@@ -53,7 +50,7 @@ for col_index in [4, 5]:
             lambda x: f"{x * 100:.0f}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
         )
 
-# 🎨 CSS styling
+# 🎨 Table styling
 st.markdown("""
     <style>
     thead tr th {text-align: center !important;}
@@ -66,27 +63,23 @@ st.markdown("""
 st.subheader("📈 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
-# ------------------ 📊 Performance Over Time (Bar Chart) -------------------
+# --------------------- 📊 PERFORMANCE OVER TIME ----------------------
 plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
-# Parse dates
 try:
     plot_df[plot_df.columns[2]] = pd.to_datetime(plot_df[plot_df.columns[2]], errors='coerce')
     plot_df = plot_df.dropna(subset=[plot_df.columns[2]])
     plot_df[plot_df.columns[2]] = plot_df[plot_df.columns[2]].dt.date
 except Exception as e:
-    st.warning("⚠️ Issue parsing dates for chart.")
+    st.warning("⚠️ Date parsing error.")
 
-# Drop rows with missing percentages
 plot_df = plot_df.dropna(subset=[plot_df.columns[4], plot_df.columns[5]])
 plot_df = plot_df.sort_values(by=plot_df.columns[2])
 
-# Draw bar chart
-st.subheader("📊 Performance Over Time (Bar Chart)")
+# 📊 Bar Chart - On-Time vs Sign Rate Over Time
+st.subheader("📊 Performance Over Time")
 
 fig, ax = plt.subplots(figsize=(12, 6))
-
-# Transparent background
 fig.patch.set_alpha(0)
 ax.patch.set_alpha(0)
 
@@ -96,22 +89,72 @@ signrate = plot_df[plot_df.columns[5]] * 100
 bar_width = 0.4
 x = range(len(dates))
 
-# Bars with red color
-ax.bar([i - bar_width/2 for i in x], ontime, width=bar_width, label='On-Time (%)', color='red')
-ax.bar([i + bar_width/2 for i in x], signrate, width=bar_width, label='Sign Rate (%)', color='darkred')
+ax.bar([i - bar_width/2 for i in x], ontime, width=bar_width, label='On-Time (%)', color='#8B0000')
+ax.bar([i + bar_width/2 for i in x], signrate, width=bar_width, label='Sign Rate (%)', color='#5A0000')
 
-# White labels on bars
 for i in x:
     ax.text(i - bar_width/2, ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
     ax.text(i + bar_width/2, signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
 
-# Customize axes
 ax.set_xticks(x)
-ax.set_xticklabels(dates, rotation=45)
-ax.set_xlabel("Date")
-ax.set_ylabel("Percentage (%)")
-ax.set_title(f"{selected_sub} - On-Time vs Sign Rate (Bar Chart)")
-ax.legend()
-ax.grid(True, axis='y')
+ax.set_xticklabels(dates, rotation=45, color='white')
+ax.set_xlabel("Date", color='white')
+ax.set_ylabel("Percentage (%)", color='white')
+ax.set_title(f"{selected_sub} - On-Time vs Sign Rate", color='white')
+ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
+ax.grid(True, axis='y', alpha=0.2)
+ax.tick_params(axis='x', colors='white')
+ax.tick_params(axis='y', colors='white')
 
 st.pyplot(fig)
+
+# ------------------ 🆚 Compare Two Sub-categories at Specific Date ------------------
+st.subheader("🆚 Compare Two Sub-categories on Selected Date")
+
+# Filter non-total rows with valid dates
+compare_df = df.copy()
+compare_df[compare_df.columns[2]] = pd.to_datetime(compare_df[compare_df.columns[2]], errors='coerce')
+compare_df = compare_df.dropna(subset=[compare_df.columns[2]])
+compare_df[compare_df.columns[2]] = compare_df[compare_df.columns[2]].dt.date
+
+subcats = df[second_col].dropna().unique()
+sub1 = st.selectbox("Sub-category 1", subcats, key="sub1")
+sub2 = st.selectbox("Sub-category 2", subcats, key="sub2")
+available_dates = compare_df[compare_df[second_col].isin([sub1, sub2])][compare_df.columns[2]].dropna().unique()
+chosen_date = st.selectbox("Select Date", sorted(available_dates))
+
+compare_data = compare_df[
+    (compare_df[second_col].isin([sub1, sub2])) &
+    (compare_df[compare_df.columns[2]] == chosen_date)
+]
+
+if not compare_data.empty:
+    fig2, ax2 = plt.subplots(figsize=(8, 5))
+    fig2.patch.set_alpha(0)
+    ax2.patch.set_alpha(0)
+
+    bar_width = 0.35
+    categories = compare_data[second_col].tolist()
+    ontime_vals = compare_data[compare_data.columns[4]].values * 100
+    sign_vals = compare_data[compare_data.columns[5]].values * 100
+    x = range(len(categories))
+
+    ax2.bar([i - bar_width/2 for i in x], ontime_vals, width=bar_width, label="On-Time (%)", color='#8B0000')
+    ax2.bar([i + bar_width/2 for i in x], sign_vals, width=bar_width, label="Sign Rate (%)", color='#5A0000')
+
+    for i in x:
+        ax2.text(i - bar_width/2, ontime_vals[i] + 1, f"{ontime_vals[i]:.0f}%", ha='center', fontsize=9, color='white')
+        ax2.text(i + bar_width/2, sign_vals[i] + 1, f"{sign_vals[i]:.0f}%", ha='center', fontsize=9, color='white')
+
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(categories, color='white')
+    ax2.set_ylabel("Percentage (%)", color='white')
+    ax2.set_title(f"Comparison on {chosen_date}", color='white')
+    ax2.legend(facecolor='black', edgecolor='white', labelcolor='white')
+    ax2.grid(True, axis='y', alpha=0.3)
+    ax2.tick_params(axis='x', colors='white')
+    ax2.tick_params(axis='y', colors='white')
+
+    st.pyplot(fig2)
+else:
+    st.warning("No data found for selected sub-categories and date.")
