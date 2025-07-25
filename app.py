@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🏎️t Logo and title text
+# 🏎️ Logo and title text
 try:
     logo = Image.open("images.jpeg")
     col1, col2 = st.columns([1, 5])
@@ -28,9 +28,7 @@ df = pd.read_excel("on.xlsx")
 first_col = df.columns[0]
 second_col = df.columns[1]
 
-# معالجة التاريخ واستخراج التاريخ فقط
 df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
-
 unique_branches = df[first_col].dropna().unique()
 
 # 🔘 Branch selection
@@ -55,25 +53,28 @@ if final_result.shape[1] > 2:
             return "Total"
     final_result[date_col] = final_result[date_col].apply(format_date)
 
-# 📊 Format percentages for column 4 and 5
-for col_index in [3, 4]:
-    if final_result.shape[1] > col_index:
-        col_name = final_result.columns[col_index]
-        def format_percent(val):
-            try:
-                num = float(val)
-                if num > 1:
-                    num /= 100
-                return f"{num * 100:.0f}%"
-            except:
-                return val
-        final_result[col_name] = final_result[col_name].apply(format_percent)
- # 🎯 تحويل العمود الخامس إلى نسبة مئوية مع الحفاظ على اسمه
+# ✅ Format column 4 as numbers, and 5–6 as percentages
+if final_result.shape[1] > 3:
+    fourth_col = final_result.columns[3]
+    final_result[fourth_col] = pd.to_numeric(final_result[fourth_col], errors='coerce').fillna(0).round(2)
+
+if final_result.shape[1] > 4:
+    fifth_col = final_result.columns[4]
+    def format_percent(val):
+        try:
+            num = float(val)
+            if num > 1:
+                num /= 100
+            return f"{num * 100:.0f}%"
+        except:
+            return val
+    final_result[fifth_col] = final_result[fifth_col].apply(format_percent)
+
 if final_result.shape[1] > 5:
-    fifth_col = final_result.columns[5]
-    final_result[fifth_col] = final_result[fifth_col].apply(
+    sixth_col = final_result.columns[5]
+    final_result[sixth_col] = final_result[sixth_col].apply(
         lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
-    )       
+    )
 
 # 📂 Show table
 st.markdown("""
@@ -84,7 +85,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 📊 Show table
 st.subheader("📊 Branch Data")
 final_result = final_result.drop(columns=["DateOnly"], errors="ignore")
 st.dataframe(final_result, use_container_width=True)
@@ -100,7 +100,9 @@ if st.button("🔹Area"):
 
 if st.session_state.show_total_rows:
     df_raw = pd.read_excel("on.xlsx")
-    total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).strip().str.lower() == "total"]
+    
+    # ✅ FIXED ERROR HERE
+    total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
     if not total_rows.empty:
         available_branches = sorted(total_rows[total_rows.columns[0]].dropna().unique())
@@ -109,6 +111,12 @@ if st.session_state.show_total_rows:
         if selected_branches:
             filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)].copy()
 
+            # Format Receivable Amount
+            if filtered_total_rows.shape[1] > 3:
+                fourth_col = filtered_total_rows.columns[3]
+                filtered_total_rows[fourth_col] = pd.to_numeric(filtered_total_rows[fourth_col], errors='coerce').fillna(0).round(2)
+
+            # Format On-Time & Sign Rate
             for col_index in [-2, -1]:
                 if filtered_total_rows.shape[1] > abs(col_index):
                     col_name = filtered_total_rows.columns[col_index]
@@ -223,11 +231,4 @@ if st.button("📊 Branch Performance Comparison"):
     ax.grid(False)
     ax.tick_params(axis='x', colors='white')
     ax.tick_params(axis='y', colors='white')
-    # 🎯 تحويل العمود الخامس إلى نسبة مئوية مع الحفاظ على اسمه
-if final_result.shape[1] > 5:
-    fifth_col = final_result.columns[5]
-    final_result[fifth_col] = final_result[fifth_col].apply(
-        lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
-    )
-
     st.pyplot(fig)
