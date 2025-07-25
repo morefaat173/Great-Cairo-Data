@@ -28,6 +28,9 @@ df = pd.read_excel("on.xlsx")
 first_col = df.columns[0]
 second_col = df.columns[1]
 
+df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
+df["DateOnly"] = df[df.columns[2]].dt.date
+
 unique_branches = df[first_col].dropna().unique()
 
 # 🔘 Branch selection
@@ -100,27 +103,46 @@ with st.expander("📊 Flexible Sub-category Comparison"):
     }
     metric_choices = st.multiselect("Choose Metrics to Compare:", list(metric_options.keys()))
 
-    date_filter_column = df.columns[2]
-    df[date_filter_column] = pd.to_datetime(df[date_filter_column], errors='coerce')
-    unique_dates = df[date_filter_column].dropna().dt.date.unique()
+    unique_dates = df["DateOnly"].dropna().unique()
     selected_dates = st.multiselect("Select Dates for Comparison:", sorted(unique_dates))
 
     if subcategories_to_compare and metric_choices and selected_dates:
         comparison_df = df[
             df[second_col].isin(subcategories_to_compare) &
-            (df[date_filter_column].dt.date.isin(selected_dates))
+            (df["DateOnly"].isin(selected_dates))
         ]
 
         for metric_choice in metric_choices:
             metric_col = metric_options[metric_choice]
             if not comparison_df.empty:
                 st.markdown(f"### 📌 {metric_choice} Comparison by Date")
-                pivot_df = comparison_df.pivot_table(index=first_col, columns=[second_col, date_filter_column.dt.date], values=metric_col).fillna(0)
+
+                pivot_df = comparison_df.pivot_table(
+                    index=first_col,
+                    columns=[second_col, "DateOnly"],
+                    values=metric_col,
+                    aggfunc="mean"
+                ).fillna(0)
 
                 if metric_choice != "Receivable Amount":
                     pivot_df *= 100
 
                 st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
+
+                # رسم بياني بسيط للعرض
+                st.markdown(":bar_chart: Chart View")
+                fig, ax = plt.subplots(figsize=(12, 6))
+                pivot_df.T.plot(kind='bar', ax=ax, color=['#8B0000', '#5A0000'])
+                ax.set_title(f"{metric_choice} by Branch and Date", color='white')
+                ax.set_xlabel("Sub-category & Date", color='white')
+                ax.set_ylabel("%" if metric_choice != "Receivable Amount" else "Amount", color='white')
+                ax.tick_params(axis='x', labelrotation=45, colors='white')
+                ax.tick_params(axis='y', colors='white')
+                ax.legend(loc='best', facecolor='black', labelcolor='white')
+                ax.grid(False)
+                fig.patch.set_alpha(0)
+                ax.patch.set_alpha(0)
+                st.pyplot(fig)
             else:
                 st.warning("No matching data found for selected filters.")
 
