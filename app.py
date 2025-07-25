@@ -90,39 +90,42 @@ if selected_branches:
 else:
     st.info("Please select one or more branches to compare.")
 
-# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
-st.subheader("🔄 Compare Shared Sub-categories (Total)")
+# --------------------- Flexible Comparison by Sub-category and Date ----------------------
+st.subheader("🔁 Flexible Sub-category Comparison")
 
-# Identify sub-categories that appear in more than one branch
-total_data = df[df[df.columns[2]].astype(str).str.strip() == "Total"]
-sub_counts = total_data.groupby(second_col)[first_col].nunique()
-shared_subs = sub_counts[sub_counts > 1].index.tolist()
+all_subs = df[second_col].dropna().unique().tolist()
+sub_selected = st.selectbox("Select Sub-category:", sorted(all_subs))
 
-if shared_subs:
-    sub_to_compare = st.selectbox("Select a Shared Sub-category:", sorted(shared_subs))
-    compare_data = df[
-        (df[second_col] == sub_to_compare) &
-        (df[df.columns[2]].astype(str).str.strip() == "Total")
-    ]
+# Get all dates + Total
+all_dates = df[df[second_col] == sub_selected][df.columns[2]].dropna().unique().tolist()
+all_dates = sorted([d for d in all_dates if d != "Total"])
+all_dates.append("Total")
+selected_date = st.selectbox("Select Date:", all_dates)
 
-    cockpit_cols = st.columns(3)
+# Comparison Metric
+metric_options = {
+    "Receivable Amount": df.columns[3],
+    "On-Time": df.columns[4],
+    "Sign Rate": df.columns[5]
+}
+metric_choice = st.selectbox("Choose Metric to Compare:", list(metric_options.keys()))
+metric_col = metric_options[metric_choice]
 
-    with cockpit_cols[0]:
-        st.markdown("#### Receivable Amount")
-        for _, row in compare_data.iterrows():
-            st.markdown(f"**{row[first_col]}:** {row[df.columns[3]]:.2f}")
-
-    with cockpit_cols[1]:
-        st.markdown("#### On-Time")
-        for _, row in compare_data.iterrows():
-            st.markdown(f"**{row[first_col]}:** {row[df.columns[4]] * 100:.0f}%")
-
-    with cockpit_cols[2]:
-        st.markdown("#### Sign Rate")
-        for _, row in compare_data.iterrows():
-            st.markdown(f"**{row[first_col]}:** {row[df.columns[5]] * 100:.0f}%")
+# Filter and show
+if selected_date == "Total":
+    filtered_compare = df[(df[second_col] == sub_selected) & (df[df.columns[2]].astype(str).str.strip() == "Total")]
 else:
-    st.info("No shared sub-categories found across multiple branches.")
+    filtered_compare = df[(df[second_col] == sub_selected) & (df[df.columns[2]] == selected_date)]
+
+if not filtered_compare.empty:
+    st.markdown(f"### 🔍 {metric_choice} Comparison for '{sub_selected}' on '{selected_date}'")
+    for _, row in filtered_compare.iterrows():
+        val = row[metric_col]
+        if metric_choice != "Receivable Amount" and pd.notnull(val):
+            val = f"{val * 100:.0f}%"
+        st.markdown(f"**{row[first_col]}:** {val}")
+else:
+    st.warning("No data found for the selected options.")
 
 # --------------------- Performance Over Time Button ----------------------
 if st.button("📊 Show Performance Over Time"):
