@@ -74,14 +74,14 @@ st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
-st.subheader("🔄 Compare Shared Sub-categories (Total)")
+st.subheader("🌐 Area Data)")
 
 # استخراج الصفوف التي تحتوي على Total فقط
 total_rows = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
 # استخراج أسماء الفروع الفريدة من صفوف Total
 unique_total_branches = total_rows[first_col].unique().tolist()
-selected_total_branches = st.multiselect("✅ Comparison of Repeated Branches (Total Rows Only):", options=unique_total_branches)
+selected_total_branches = st.multiselect("🔴 Aggregated Comparison of Area Branches):", options=unique_total_branches)
 
 if selected_total_branches:
     filtered_total_rows = total_rows[total_rows[first_col].isin(selected_total_branches)]
