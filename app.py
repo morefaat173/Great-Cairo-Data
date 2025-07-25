@@ -78,7 +78,6 @@ st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
-# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
 if "show_total_rows" not in st.session_state:
