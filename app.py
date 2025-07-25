@@ -74,3 +74,11 @@ st.markdown("""
 # 📊 عرض جدول البيانات
 st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
+# 🎯 تحويل قيم العمود "On-Time" و "Sign Rate" إلى نسب مئوية
+columns_to_convert = ["On-Time", "Sign Rate"]
+
+for col in columns_to_convert:
+    if col in final_result.columns:
+        final_result[col] = final_result[col].apply(
+            lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
+        )
