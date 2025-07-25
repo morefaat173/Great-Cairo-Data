@@ -125,7 +125,9 @@ with st.expander("📊 Flexible Sub-category Comparison", expanded=False):
             for metric_choice in metric_choices:
                 st.markdown(f"### 📌 {metric_choice} on {selected_date}")
                 metric_col = metric_options[metric_choice]
-                pivot_df = comparison_df.pivot_table(index=second_col, columns=first_col, values=metric_col, aggfunc='first').fillna(0)
+                pivot_df = comparison_df.pivot_table(index=second_col, columns=first_col, values=metric_col, aggfunc='first')
+
+                pivot_df = pivot_df.dropna(axis=1, how='all')  # remove columns with all NaNs
 
                 if metric_choice != "Receivable Amount":
                     pivot_df *= 100
