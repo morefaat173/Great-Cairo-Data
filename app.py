@@ -1,52 +1,53 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-from PIL import Image
+# ------------------ 📊 مقارنة بين فرعين -------------------
+st.subheader("📊 مقارنة بين فرعين")
 
-st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
+# اختيار الفرعين
+selected_branches = st.multiselect("اختر فرعين للمقارنة:", unique_branches, default=unique_branches[:2])
 
-# 🖼️ Logo
-try:
-    logo = Image.open("images.jpeg")
-    st.image(logo, width=200)
-except:
-    st.warning("⚠️ Logo not found.")
+# اختيار نوع المؤشر
+metric_option = st.radio("اختر نوع المؤشر:", ("On-Time sign", "Sign Rate", "الاثنين معًا"))
 
-st.title("📊 Great Cairo Delivery Data")
-
-# 📥 Load Excel
-df = pd.read_excel("on.xlsx")
-
-# 🎯 Select Branches for comparison
-branches = df["Branch Name"].dropna().unique()
-selected_branches = st.multiselect("Choose up to 2 Branches to Compare:", branches, default=branches[:2])
-
-# 🧮 Proceed if 2 branches are selected
 if len(selected_branches) == 2:
-    comp_df = df[df["Branch Name"].isin(selected_branches)].copy()
-    comp_df["Date"] = pd.to_datetime(comp_df["Date"], errors='coerce')
-    comp_df = comp_df.dropna(subset=["Date", "On-Time sign", "Sign"])
-    comp_df = comp_df.sort_values(by="Date")
+    compare_df = df[df[first_col].isin(selected_branches)].copy()
 
-    # 📊 Plot comparison
-    st.subheader("📈 On-Time Sign vs Sign Rate Comparison")
+    # معالجة التواريخ
+    try:
+        compare_df[compare_df.columns[2]] = pd.to_datetime(compare_df[compare_df.columns[2]], errors='coerce')
+        compare_df = compare_df.dropna(subset=[compare_df.columns[2]])
+        compare_df["Date"] = compare_df[compare_df.columns[2]].dt.date
+    except:
+        st.warning("⚠️ مشكلة في التاريخ أثناء المقارنة.")
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    # حذف القيم الناقصة
+    compare_df = compare_df.dropna(subset=[compare_df.columns[4], compare_df.columns[5]])
+
+    # إعادة تسمية الأعمدة لتوضيحها
+    compare_df.rename(columns={
+        compare_df.columns[4]: "On-Time sign",
+        compare_df.columns[5]: "Sign Rate",
+        first_col: "Branch"
+    }, inplace=True)
+
+    # رسم الرسم البياني
+    fig2, ax2 = plt.subplots(figsize=(10, 5))
 
     for branch in selected_branches:
-        branch_data = comp_df[comp_df["Branch Name"] == branch]
-        ax.plot(branch_data["Date"], branch_data["On-Time sign"], label=f"{branch} - On-Time", marker='o')
-        ax.plot(branch_data["Date"], branch_data["Sign"], label=f"{branch} - Sign Rate", marker='s')
+        branch_data = compare_df[compare_df["Branch"] == branch].sort_values(by="Date")
 
-    ax.set_title("Branch Comparison Over Time")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Value")
-    ax.legend()
-    ax.grid(True)
+        if metric_option in ["On-Time sign", "الاثنين معًا"]:
+            ax2.plot(branch_data["Date"], branch_data["On-Time sign"] * 100,
+                     marker='o', label=f"{branch} - On-Time")
+
+        if metric_option in ["Sign Rate", "الاثنين معًا"]:
+            ax2.plot(branch_data["Date"], branch_data["Sign Rate"] * 100,
+                     marker='s', label=f"{branch} - Sign Rate")
+
+    ax2.set_title("مقارنة المؤشرات بين فرعين")
+    ax2.set_xlabel("التاريخ")
+    ax2.set_ylabel("النسبة المئوية (%)")
+    ax2.legend()
+    ax2.grid(True)
     plt.xticks(rotation=45)
-
-    st.pyplot(fig)
-
-# 🔽 Optional: Show raw data
-if st.checkbox("Show Raw Data Table"):
-    st.dataframe(df, use_container_width=True)
+    st.pyplot(fig2)
+else:
+    st.info("ℹ️ يرجى اختيار فرعين للمقارنة.")
