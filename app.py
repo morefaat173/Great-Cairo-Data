@@ -21,7 +21,7 @@ try:
 except FileNotFoundError:
     st.warning("⚠️ Logo not found.")
 
-st.title("📊 Great Cairo Delivery Data")
+st.title("📅 Branches Data")
 
 # 💕 Load Data
 df = pd.read_excel("on.xlsx")
@@ -132,7 +132,7 @@ with st.expander("📈Branch Statistics Comparison"):
                 st.warning("No matching data found for selected filters.")
 
 # --------------------- Performance Over Time Button ----------------------
-if st.button("📊 Show Performance Over Time"):
+if st.button("📊 Branch performance overview"):
     plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
     try:
