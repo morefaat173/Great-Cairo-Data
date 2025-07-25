@@ -99,17 +99,19 @@ else:
 # --------------------- Flexible Sub-category Comparison ----------------------
 st.subheader("🔁 Flexible Sub-category Comparison")
 
-subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
+with st.form("flexible_comparison_form"):
+    subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
-metric_options = {
-    "Receivable Amount": df.columns[3],
-    "On-Time": df.columns[4],
-    "Sign Rate": df.columns[5]
-}
-metric_choice = st.selectbox("Choose Metric to Compare:", list(metric_options.keys()))
-metric_col = metric_options[metric_choice]
+    metric_options = {
+        "Receivable Amount": df.columns[3],
+        "On-Time": df.columns[4],
+        "Sign Rate": df.columns[5]
+    }
+    metric_choice = st.selectbox("Choose Metric to Compare:", list(metric_options.keys()))
+    submit_btn = st.form_submit_button("🔍 Show Comparison")
 
-if subcategories_to_compare:
+if submit_btn and subcategories_to_compare:
+    metric_col = metric_options[metric_choice]
     filtered = df[
         df[second_col].isin(subcategories_to_compare) &
         (df[df.columns[2]].astype(str).str.strip() == "Total")
