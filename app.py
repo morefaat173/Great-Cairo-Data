@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🗾️ Logo and title text
+# 🎾️ Logo and title text
 try:
     logo = Image.open("images.jpeg")
     col1, col2 = st.columns([1, 5])
@@ -116,7 +116,7 @@ else:
     st.info("No shared sub-categories found across multiple branches.")
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
-if st.button("📊 Flexible Sub-category Comparison"):
+with st.expander("📊 Flexible Sub-category Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
@@ -142,6 +142,19 @@ if st.button("📊 Flexible Sub-category Comparison"):
                     pivot_df *= 100
 
                 st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
+
+                # Add chart
+                fig, ax = plt.subplots(figsize=(10, 4))
+                pivot_df.T.plot(kind='bar', ax=ax, colormap="darkred")
+                ax.set_title(f"{metric_choice} by Branch", color='white')
+                ax.set_ylabel("%" if metric_choice != "Receivable Amount" else "Amount", color='white')
+                ax.set_xlabel("Branch", color='white')
+                ax.tick_params(axis='x', labelrotation=45, colors='white')
+                ax.tick_params(axis='y', colors='white')
+                ax.legend(title="Sub-category", title_fontsize='10', labelcolor='white', facecolor='black')
+                fig.patch.set_alpha(0)
+                ax.patch.set_alpha(0)
+                st.pyplot(fig)
             else:
                 st.warning("No matching data found for selected filters.")
 
