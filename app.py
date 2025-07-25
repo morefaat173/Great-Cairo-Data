@@ -57,6 +57,14 @@ for col_index in percent_columns:
         final_result[col_name] = final_result[col_name].apply(
             lambda x: f"{float(x)/100*100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
         )
+        # 🎯 تحويل قيم العمود "On-Time" و "Sign Rate" إلى نسب مئوية
+columns_to_convert = ["On-Time", "Sign Rate"]
+
+for col in columns_to_convert:
+    if col in final_result.columns:
+        final_result[col] = final_result[col].apply(
+            lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
+        )
 
 # 🎨 تنسيق جدول العرض
 st.markdown("""
