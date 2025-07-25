@@ -56,9 +56,9 @@ if final_result.shape[1] > 2:
             return "Total"
     final_result[date_col] = final_result[date_col].apply(format_date)
 
-# 📊 Format percentages
-for col_index in [4, 5]:
-    if final_result.shape[1] > col_index:
+# 📊 Format percentages for last two columns
+for col_index in [-2, -1]:
+    if final_result.shape[1] > abs(col_index):
         col_name = final_result.columns[col_index]
         final_result[col_name] = final_result[col_name].apply(
             lambda x: f"{x * 100:.0f}%" if pd.notnull(x) and isinstance(x, (int, float)) else x
