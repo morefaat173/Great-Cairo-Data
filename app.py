@@ -80,25 +80,23 @@ st.dataframe(final_result, use_container_width=True)
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
-# ✅ استخراج صفوف 'Total' من نسخة خام من الملف
-df_raw = pd.read_excel("on.xlsx")
-total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).str.strip().str.lower() == "total"]
+if st.button("📌 Show Total Rows by Branch"):
+    df_raw = pd.read_excel("on.xlsx")
+    total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
-# 🔍 فلتر الفروع
-selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", sorted(total_rows[df_raw.columns[0]].dropna().unique()))
+    available_branches = sorted(total_rows[df_raw.columns[0]].dropna().unique())
+    selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", available_branches)
 
-# ✅ تصفية النتائج حسب الفروع
-if selected_branches:
-    filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)]
-else:
-    filtered_total_rows = total_rows.copy()
+    if selected_branches:
+        filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)]
+    else:
+        filtered_total_rows = total_rows.copy()
 
-# ✅ عرض النتائج أو تحذير
-if not filtered_total_rows.empty:
-    st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
-    st.dataframe(filtered_total_rows, use_container_width=True)
-else:
-    st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
+    if not filtered_total_rows.empty:
+        st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
+        st.dataframe(filtered_total_rows, use_container_width=True)
+    else:
+        st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📊 Flexible Sub-category Comparison"):
