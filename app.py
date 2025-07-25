@@ -30,7 +30,6 @@ second_col = df.columns[1]
 
 # معالجة التاريخ واستخراج التاريخ فقط
 df[df.columns[2]] = pd.to_datetime(df[df.columns[2]], errors='coerce')
-df["DateOnly"] = df[df.columns[2]].dt.date
 
 unique_branches = df[first_col].dropna().unique()
 
@@ -94,6 +93,7 @@ st.markdown("""
 
 # 📊 Show table
 st.subheader("📊 Branch Data")
+final_result = final_result.drop(columns=["DateOnly"], errors="ignore")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
@@ -147,6 +147,7 @@ with st.expander("📊 Flexible Sub-category Comparison"):
     }
     metric_choices = st.multiselect("Choose Metrics to Compare:", list(metric_options.keys()))
 
+    df["DateOnly"] = df[df.columns[2]].dt.date
     unique_dates = df["DateOnly"].dropna().unique()
     selected_dates = st.multiselect("Select Dates for Comparison:", sorted(unique_dates))
 
