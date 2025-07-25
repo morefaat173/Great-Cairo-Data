@@ -77,15 +77,15 @@ st.markdown("""
 st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
-# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
-st.subheader("🔄 Compare Shared Sub-categories (Total)")
+# --------------------- Area Data ----------------------
+st.subheader("🌐 Area Data")
 
 if st.button("📌 Show Total Rows by Branch"):
     df_raw = pd.read_excel("on.xlsx")
     total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
     available_branches = sorted(total_rows[df_raw.columns[0]].dropna().unique())
-    selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", available_branches)
+    selected_branches = st.multiselect("Select area :", available_branches)
 
     if selected_branches:
         filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)]
@@ -93,7 +93,7 @@ if st.button("📌 Show Total Rows by Branch"):
         filtered_total_rows = total_rows.copy()
 
     if not filtered_total_rows.empty:
-        st.markdown("### 🌐 Aggregated Comparison of Area Branches")
+        st.markdown("### 🔹 Aggregated Comparison of Area Branches")
         st.dataframe(filtered_total_rows, use_container_width=True)
     else:
         st.warning("⚠️  'Total'.")
