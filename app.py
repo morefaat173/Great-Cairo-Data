@@ -90,12 +90,12 @@ final_result = final_result.drop(columns=["DateOnly"], errors="ignore")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
-st.subheader("🔄 Compare Shared Sub-categories (Total)")
+st.subheader("🌐 Aggregated Comparison of Area Branches")
 
 if "show_total_rows" not in st.session_state:
     st.session_state.show_total_rows = False
 
-if st.button("📌 Show Total Rows by Branch"):
+if st.button("🔹Area"):
     st.session_state.show_total_rows = True
 
 if st.session_state.show_total_rows:
@@ -104,7 +104,7 @@ if st.session_state.show_total_rows:
 
     if not total_rows.empty:
         available_branches = sorted(total_rows[total_rows.columns[0]].dropna().unique())
-        selected_branches = st.multiselect("📌 Select branches to show 'Total' rows:", available_branches, key="branch_total_selector")
+        selected_branches = st.multiselect("📌 Select Area:", available_branches, key="area_total_selector")
 
         if selected_branches:
             filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)].copy()
@@ -122,7 +122,7 @@ if st.session_state.show_total_rows:
                             return val
                     filtered_total_rows[col_name] = filtered_total_rows[col_name].apply(format_percent)
 
-            st.markdown("### ✅ Total Row Results for Selected Branches")
+            st.markdown("###📈 Branch Statistics Comparison")
             st.dataframe(filtered_total_rows, use_container_width=True)
         else:
             st.info("ℹ️ Please select a branch from the list to show data.")
@@ -130,7 +130,7 @@ if st.session_state.show_total_rows:
         st.warning("⚠️ No rows containing 'Total' found in the data.")
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
-with st.expander("📊 Flexible Sub-category Comparison"):
+with st.expander("📊 Branch Performance Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
