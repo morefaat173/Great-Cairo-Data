@@ -152,20 +152,24 @@ if st.button("📊 Branch Performance Comparison"):
     dates = plot_df[plot_df.columns[2]]
     ontime = plot_df[plot_df.columns[4]] * 100
     signrate = plot_df[plot_df.columns[5]] * 100
+    bar_width = 0.4
+    x = range(len(dates))
 
-    ax.plot(dates, ontime, marker='o', linestyle='-', color='#8B0000', label='On-Time (%)')
-    ax.plot(dates, signrate, marker='s', linestyle='--', color='#5A0000', label='Sign Rate (%)')
+    ax.bar([i - bar_width/2 for i in x], ontime, width=bar_width, label='On-Time', color='#8B0000')
+    ax.bar([i + bar_width/2 for i in x], signrate, width=bar_width, label='Sign Rate', color='#5A0000')
 
-    for i in range(len(dates)):
-        ax.text(dates.iloc[i], ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
-        ax.text(dates.iloc[i], signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
+    for i in x:
+        ax.text(i - bar_width/2, ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
+        ax.text(i + bar_width/2, signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
 
+    ax.set_xticks(x)
+    ax.set_xticklabels(dates, rotation=45, color='white')
     ax.set_xlabel("Date", color='white')
     ax.set_ylabel("Percentage (%)", color='white')
-    ax.set_title(f"{selected_sub} - On-Time & Sign Rate Over Time", color='white')
+    ax.set_title(f"{selected_sub} - On-Time & Sign Rate", color='white')
     ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
-    ax.grid(True, axis='y', alpha=0.2)
-    ax.tick_params(axis='x', rotation=45, colors='white')
+    ax.grid(False)
+    ax.tick_params(axis='x', colors='white')
     ax.tick_params(axis='y', colors='white')
 
     st.pyplot(fig)
