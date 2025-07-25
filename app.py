@@ -78,26 +78,32 @@ st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
+# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
+if "show_total_rows" not in st.session_state:
+    st.session_state.show_total_rows = False
+
 if st.button("📌 Show Total Rows by Branch"):
+    st.session_state.show_total_rows = True
+
+if st.session_state.show_total_rows:
     df_raw = pd.read_excel("on.xlsx")
     total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
     if not total_rows.empty:
         available_branches = sorted(total_rows[total_rows.columns[0]].dropna().unique())
-        selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", available_branches)
+        selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", available_branches, key="branch_total_selector")
 
         if selected_branches:
             filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)]
+            if not filtered_total_rows.empty:
+                st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
+                st.dataframe(filtered_total_rows, use_container_width=True)
+            else:
+                st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
         else:
-            filtered_total_rows = pd.DataFrame()
-
-        if not filtered_total_rows.empty:
-            st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
-            st.dataframe(filtered_total_rows, use_container_width=True)
-        else:
-            st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
+            st.info("ℹ️ اختر فرعًا من القائمة لعرض البيانات.")
     else:
         st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' في البيانات.")
 
