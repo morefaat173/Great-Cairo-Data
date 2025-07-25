@@ -145,7 +145,7 @@ with st.expander("📊 Flexible Sub-category Comparison"):
 
                 # Add chart
                 fig, ax = plt.subplots(figsize=(10, 4))
-                pivot_df.T.plot(kind='bar', ax=ax, colormap="darkred")
+                pivot_df.T.plot(kind='bar', ax=ax, color=['#8B0000', '#A52A2A', '#B22222', '#CD5C5C'])
                 ax.set_title(f"{metric_choice} by Branch", color='white')
                 ax.set_ylabel("%" if metric_choice != "Receivable Amount" else "Amount", color='white')
                 ax.set_xlabel("Branch", color='white')
