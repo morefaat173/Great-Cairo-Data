@@ -80,8 +80,9 @@ st.dataframe(final_result, use_container_width=True)
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
-# ✅ استخراج الصفوف التي تحتوي على 'Total' فقط (بدقة أكبر)
-total_rows = df[df[df.columns[3]].astype(str).str.strip().str.lower() == "total"]
+# ✅ استخراج الصفوف التي تحتوي على 'Total' بشكل مرن (مع تجاهل المسافات والحروف الكبيرة)
+total_mask = df[df.columns[2]].astype(str).str.strip().str.lower() == "total"
+total_rows = df[total_mask].copy()
 
 # 🔍 فلتر الفروع
 selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", sorted(total_rows[first_col].dropna().unique()))
