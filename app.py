@@ -76,18 +76,19 @@ st.dataframe(final_result, use_container_width=True)
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
-total_data = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
+# استخراج الصفوف التي تحتوي على Total فقط
+total_rows = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
-# تجميع كل التصنيفات والعدد المرتبط بكل تصنيف
-shared_sub_data = total_data.groupby(second_col)[first_col].nunique()
-shared_subs = shared_sub_data[shared_sub_data > 1].index.tolist()
+# إنشاء قاموس يحتوي كل التصنيفات المشتركة عبر الفروع
+grouped = total_rows.groupby(second_col)[first_col].nunique()
+shared_subs = grouped[grouped > 1].index.tolist()
 
-# عرض جميع الصفوف المرتبطة بالتصنيفات المشتركة
-compare_data = total_data[total_data[second_col].isin(shared_subs)]
+# استخراج الصفوف التي تحتوي على التصنيفات المشتركة فقط
+shared_total_rows = total_rows[total_rows[second_col].isin(shared_subs)]
 
-if not compare_data.empty:
+if not shared_total_rows.empty:
     st.markdown("### ✅ Comparison of Shared Sub-categories Across Branches (Total Rows Only)")
-    st.dataframe(compare_data, use_container_width=True)
+    st.dataframe(shared_total_rows, use_container_width=True)
 else:
     st.info("No shared sub-categories found across multiple branches.")
 
