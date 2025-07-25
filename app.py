@@ -99,14 +99,14 @@ if selected_branches:
 else:
     st.info("Please select one or more branches to compare.")
 
-# --------------------- Flexible Sub-category Comparison ----------------------
-st.markdown("""
-    <div style='text-align: center; margin-top: 70px;'>
-        <h2 style='color: #8B0000; font-size: 36px; font-weight: bold;'>Flexible Sub-category Comparison</h2>
-    </div>
-""", unsafe_allow_html=True)
+# --------------------- Flexible Sub-category Comparison Button ----------------------
+if st.button("📊 Flexible Sub-category Comparison"):
+    st.markdown("""
+        <div style='text-align: center; margin-top: 50px;'>
+            <h2 style='color: #8B0000; font-size: 36px; font-weight: bold;'>Flexible Sub-category Comparison</h2>
+        </div>
+    """, unsafe_allow_html=True)
 
-with st.form("flexible_comparison_form"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
@@ -115,26 +115,25 @@ with st.form("flexible_comparison_form"):
         "Sign Rate": df.columns[5]
     }
     metric_choices = st.multiselect("Choose Metrics to Compare:", list(metric_options.keys()))
-    submit_btn = st.form_submit_button("📊 Show Flexible Comparison")
 
-if submit_btn and subcategories_to_compare and metric_choices:
-    comparison_df = df[
-        df[second_col].isin(subcategories_to_compare) &
-        (df[df.columns[2]].astype(str).str.strip() == "Total")
-    ]
+    if subcategories_to_compare and metric_choices:
+        comparison_df = df[
+            df[second_col].isin(subcategories_to_compare) &
+            (df[df.columns[2]].astype(str).str.strip() == "Total")
+        ]
 
-    for metric_choice in metric_choices:
-        metric_col = metric_options[metric_choice]
-        if not comparison_df.empty:
-            st.markdown(f"### 📌 {metric_choice} Comparison")
-            pivot_df = comparison_df.pivot(index=second_col, columns=first_col, values=metric_col).fillna(0)
+        for metric_choice in metric_choices:
+            metric_col = metric_options[metric_choice]
+            if not comparison_df.empty:
+                st.markdown(f"### 📌 {metric_choice} Comparison")
+                pivot_df = comparison_df.pivot(index=second_col, columns=first_col, values=metric_col).fillna(0)
 
-            if metric_choice != "Receivable Amount":
-                pivot_df *= 100
+                if metric_choice != "Receivable Amount":
+                    pivot_df *= 100
 
-            st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
-        else:
-            st.warning("No matching data found for selected filters.")
+                st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
+            else:
+                st.warning("No matching data found for selected filters.")
 
 # --------------------- Performance Over Time Button ----------------------
 if st.button("📊 Show Performance Over Time"):
