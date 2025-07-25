@@ -80,21 +80,24 @@ st.dataframe(final_result, use_container_width=True)
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
-# استخراج الصفوف التي تحتوي على Total فقط
+# ✅ استخراج الصفوف التي تحتوي على Total في العمود الثالث
 total_rows = df[df[df.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
-# إضافة فلتر لاختيار الفرع
-selected_branches = st.multiselect("Select Branches to View Total Rows:", sorted(df[first_col].dropna().unique()))
+# ✅ فلتر لاختيار الفروع لعرض الصفوف المرتبطة بها فقط
+selected_branches = st.multiselect("🔍 Select Branches to Filter 'Total' Rows:", sorted(df[first_col].dropna().unique()))
 
 if selected_branches:
     filtered_total_rows = total_rows[total_rows[first_col].isin(selected_branches)]
 else:
-    filtered_total_rows = total_rows
+    filtered_total_rows = total_rows.copy()
 
+# ✅ عرض النتائج أو رسالة تنبيه
 if not filtered_total_rows.empty:
+    st.markdown("### 📋 Total Rows for Selected Branches")
     st.dataframe(filtered_total_rows, use_container_width=True)
 else:
-    st.info("No 'Total' rows found for selected branches.")
+    st.info("⚠️ No 'Total' rows found for selected branches.")
+
 
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📊 Flexible Sub-category Comparison"):
