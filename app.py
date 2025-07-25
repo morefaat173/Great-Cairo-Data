@@ -46,7 +46,8 @@ if final_result.shape[1] > 2:
     date_col = final_result.columns[2]
     def format_date(val):
         try:
-            return pd.to_datetime(val).date()
+            dt = pd.to_datetime(val)
+            return dt.strftime('%Y-%m-%d')
         except:
             return "Total"
     final_result[date_col] = final_result[date_col].apply(format_date)
@@ -68,111 +69,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 📈 Show table
-st.subheader("📈 Branch Data")
+# 📊 Show table
+st.subheader("📊 Branch Data")
 st.dataframe(final_result, use_container_width=True)
-
-# --------------------- Cockpit Comparison by Total ----------------------
-st.subheader("🧙 Branch Comparison Cockpit")
-
-total_rows = df[df[df.columns[2]].astype(str).str.strip() == "Total"].copy()
-selected_branches = st.multiselect("Select Branches to Compare:", df[first_col].dropna().unique())
-
-if selected_branches:
-    cockpit_cols = st.columns(3)
-    filtered_total = total_rows[total_rows[first_col].isin(selected_branches)]
-
-    with cockpit_cols[0]:
-        st.markdown("#### Receivable Amount")
-        for _, row in filtered_total.iterrows():
-            st.markdown(f"**{row[first_col]} - {row[second_col]}:** {row[df.columns[3]]:.2f}")
-
-    with cockpit_cols[1]:
-        st.markdown("#### On-Time")
-        for _, row in filtered_total.iterrows():
-            st.markdown(f"**{row[first_col]} - {row[second_col]}:** {row[df.columns[4]] * 100:.0f}%")
-
-    with cockpit_cols[2]:
-        st.markdown("#### Sign Rate")
-        for _, row in filtered_total.iterrows():
-            st.markdown(f"**{row[first_col]} - {row[second_col]}:** {row[df.columns[5]] * 100:.0f}%")
-else:
-    st.info("Please select one or more branches to compare.")
-
-# --------------------- Flexible Sub-category Comparison Section ----------------------
-with st.expander("📊 Flexible Sub-category Comparison", expanded=False):
-    subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
-
-    available_dates = df[df.columns[2]].dropna().astype(str).unique()
-    selected_date = st.selectbox("Select Date or 'Total' for Comparison:", sorted(available_dates))
-
-    metric_options = {
-        "Receivable Amount": df.columns[3],
-        "On-Time": df.columns[4],
-        "Sign Rate": df.columns[5]
-    }
-    metric_choices = st.multiselect("Choose Metrics to Compare:", list(metric_options.keys()))
-
-    if subcategories_to_compare and selected_date and metric_choices:
-        comparison_df = df[
-            df[second_col].isin(subcategories_to_compare) &
-            (df[df.columns[2]].astype(str).str.strip() == str(selected_date).strip())
-        ]
-
-        if comparison_df.empty:
-            st.warning("No data found for the selected filters.")
-        else:
-            for metric_choice in metric_choices:
-                st.markdown(f"### 📌 {metric_choice} on {selected_date}")
-                metric_col = metric_options[metric_choice]
-                pivot_df = comparison_df.pivot_table(index=second_col, columns=first_col, values=metric_col, aggfunc='first')
-
-                pivot_df = pivot_df.dropna(axis=1, how='all')  # remove columns with all NaNs
-
-                if metric_choice != "Receivable Amount":
-                    pivot_df *= 100
-
-                st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
-
-# --------------------- Performance Over Time Button ----------------------
-if st.button("📊 Show Performance Over Time"):
-    plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
-
-    try:
-        plot_df[plot_df.columns[2]] = pd.to_datetime(plot_df[plot_df.columns[2]], errors='coerce')
-        plot_df = plot_df.dropna(subset=[plot_df.columns[2]])
-        plot_df[plot_df.columns[2]] = plot_df[plot_df.columns[2]].dt.date
-    except Exception as e:
-        st.warning("⚠️ Date parsing error.")
-
-    plot_df = plot_df.dropna(subset=[plot_df.columns[4], plot_df.columns[5]])
-    plot_df = plot_df.sort_values(by=plot_df.columns[2])
-
-    fig, ax = plt.subplots(figsize=(12, 6))
-    fig.patch.set_alpha(0)
-    ax.patch.set_alpha(0)
-
-    dates = plot_df[plot_df.columns[2]]
-    ontime = plot_df[plot_df.columns[4]] * 100
-    signrate = plot_df[plot_df.columns[5]] * 100
-    bar_width = 0.4
-    x = range(len(dates))
-
-    ax.bar([i - bar_width/2 for i in x], ontime, width=bar_width, label='On-Time (%)', color='#8B0000')
-    ax.bar([i + bar_width/2 for i in x], signrate, width=bar_width, label='Sign Rate (%)', color='#5A0000')
-
-    for i in x:
-        ax.text(i - bar_width/2, ontime.iloc[i] + 1, f"{ontime.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
-        ax.text(i + bar_width/2, signrate.iloc[i] + 1, f"{signrate.iloc[i]:.0f}%", ha='center', fontsize=8, color='white')
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(dates, rotation=45, color='white')
-    ax.set_xlabel("Date", color='white')
-    ax.set_ylabel("Percentage (%)", color='white')
-    ax.set_title(f"{selected_sub} - On-Time vs Sign Rate", color='white')
-    ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
-    ax.grid(True, axis='y', alpha=0.2)
-    ax.tick_params(axis='x', colors='white')
-    ax.tick_params(axis='y', colors='white')
-
-    st.pyplot(fig)
