@@ -123,10 +123,11 @@ with st.expander("🤚 Compare Two Sub-categories on Selected Date", expanded=Fa
 
     compare_type = st.radio("Select Comparison Type", ["Both", "On-Time only", "Sign Rate only"], horizontal=True)
 
+    # 🚨 Fix total check to strip text
     if chosen_date == "Total":
         compare_data = df[
             (df[second_col].isin([sub1, sub2])) &
-            (df[df.columns[2]] == "Total")
+            (df[df.columns[2]].astype(str).str.strip() == "Total")
         ]
     else:
         compare_data = compare_df[
@@ -167,3 +168,6 @@ with st.expander("🤚 Compare Two Sub-categories on Selected Date", expanded=Fa
         st.pyplot(fig2)
     else:
         st.warning("No data found for selected sub-categories and date.")
+
+# ✅ Show unique values in column 3 to debug Total issues
+st.write("🔍 Unique values in the 3rd column (after strip):", df[df.columns[2]].astype(str).str.strip().unique())
