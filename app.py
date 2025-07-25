@@ -93,13 +93,13 @@ if st.button("📌 Show Total Rows by Branch"):
         filtered_total_rows = total_rows.copy()
 
     if not filtered_total_rows.empty:
-        st.markdown("### ✅ نتائج صفوف Total للفروع المحددة")
+        st.markdown("### 🌐 Aggregated Comparison of Area Branches")
         st.dataframe(filtered_total_rows, use_container_width=True)
     else:
-        st.warning("⚠️ لا توجد صفوف تحتوي على 'Total' للفروع المختارة.")
+        st.warning("⚠️  'Total'.")
 
-# --------------------- Flexible Sub-category Comparison Button ----------------------
-with st.expander("📊 Flexible Sub-category Comparison"):
+# ---------------------  Branch Statistics Comparison Button ----------------------
+with st.expander("📈 Branch Statistics Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
     metric_options = {
