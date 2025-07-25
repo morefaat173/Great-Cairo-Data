@@ -57,16 +57,12 @@ if final_result.shape[1] > 3:
         lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
     )
 
-# 🎨 تنسيق عرض الجدول مع تلوين القيم الأقل من 50% في العمود الرابع
-def highlight_low_percentage(val):
-    try:
-        num = float(str(val).replace('%', '').strip())
-        if num < 50:
-            return 'background-color: #8B0000; color: white; font-weight: bold;'
-    except:
-        pass
-    return ''
-
+# 🎯 تحويل العمود الخامس إلى نسبة مئوية مع الحفاظ على اسمه
+if final_result.shape[1] > 5:
+    fifth_col = final_result.columns[5]
+    final_result[fifth_col] = final_result[fifth_col].apply(
+        lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
+    )
 st.markdown("""
     <style>
     thead tr th {text-align: center !important; color: white; background-color: #8B0000;}
