@@ -90,17 +90,11 @@ if selected_branches:
 else:
     st.info("Please select one or more branches to compare.")
 
-# --------------------- Flexible Comparison by Sub-category and Date ----------------------
+# --------------------- Flexible Sub-category Comparison ----------------------
 st.subheader("🔁 Flexible Sub-category Comparison")
 
-branch_options = df[first_col].dropna().unique()
-col1, col2 = st.columns(2)
-with col1:
-    branch_1 = st.selectbox("Select First Branch:", branch_options, key="branch1")
-with col2:
-    branch_2 = st.selectbox("Select Second Branch:", branch_options, key="branch2")
-
-multi_subs = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
+branches_to_compare = st.multiselect("Select Branches:", sorted(df[first_col].dropna().unique()))
+subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
 
 metric_options = {
     "Receivable Amount": df.columns[3],
@@ -110,51 +104,23 @@ metric_options = {
 metric_choice = st.selectbox("Choose Metric to Compare:", list(metric_options.keys()))
 metric_col = metric_options[metric_choice]
 
-if multi_subs:
-    compare_df = df[
-        df[first_col].isin([branch_1, branch_2]) &
-        df[second_col].isin(multi_subs) &
+if branches_to_compare and subcategories_to_compare:
+    filtered = df[
+        df[first_col].isin(branches_to_compare) &
+        df[second_col].isin(subcategories_to_compare) &
         (df[df.columns[2]].astype(str).str.strip() == "Total")
     ]
 
-    if not compare_df.empty:
-        st.markdown(f"### 🔍 {metric_choice} Comparison between '{branch_1}' and '{branch_2}'")
+    if not filtered.empty:
+        st.markdown(f"### 📌 {metric_choice} Comparison")
+        pivot_df = filtered.pivot(index=second_col, columns=first_col, values=metric_col).fillna(0)
 
-        fig, ax = plt.subplots(figsize=(8, 5))
-        fig.patch.set_alpha(0)
-        ax.patch.set_alpha(0)
+        if metric_choice != "Receivable Amount":
+            pivot_df *= 100
 
-        categories = compare_df[second_col].unique()
-        bar_width = 0.35
-        x = range(len(categories))
-
-        branch1_vals = []
-        branch2_vals = []
-        for cat in categories:
-            b1_val = compare_df[(compare_df[first_col] == branch_1) & (compare_df[second_col] == cat)][metric_col].values
-            b2_val = compare_df[(compare_df[first_col] == branch_2) & (compare_df[second_col] == cat)][metric_col].values
-            branch1_vals.append(b1_val[0] * 100 if metric_choice != "Receivable Amount" else b1_val[0]) if len(b1_val) > 0 else branch1_vals.append(0)
-            branch2_vals.append(b2_val[0] * 100 if metric_choice != "Receivable Amount" else b2_val[0]) if len(b2_val) > 0 else branch2_vals.append(0)
-
-        ax.bar([i - bar_width/2 for i in x], branch1_vals, width=bar_width, label=branch_1, color='#8B0000')
-        ax.bar([i + bar_width/2 for i in x], branch2_vals, width=bar_width, label=branch_2, color='#5A0000')
-
-        for i in x:
-            ax.text(i - bar_width/2, branch1_vals[i] + 1, f"{branch1_vals[i]:.0f}", ha='center', fontsize=9, color='white')
-            ax.text(i + bar_width/2, branch2_vals[i] + 1, f"{branch2_vals[i]:.0f}", ha='center', fontsize=9, color='white')
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(categories, color='white')
-        ax.set_ylabel(metric_choice, color='white')
-        ax.set_title("Sub-category Comparison", color='white')
-        ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
-        ax.grid(True, axis='y', alpha=0.3)
-        ax.tick_params(axis='x', colors='white')
-        ax.tick_params(axis='y', colors='white')
-
-        st.pyplot(fig)
+        st.dataframe(pivot_df.style.format("{:.0f}" if metric_choice != "Receivable Amount" else "{:.2f}"))
     else:
-        st.warning("No matching data found for the selected filters.")
+        st.warning("No matching data found for selected filters.")
 
 # --------------------- Performance Over Time Button ----------------------
 if st.button("📊 Show Performance Over Time"):
