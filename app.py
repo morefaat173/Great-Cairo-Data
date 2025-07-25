@@ -51,19 +51,16 @@ if final_result.shape[1] > 2:
     )
 
 # 🎯 تحويل الأعمدة إلى نسب مئوية
-percent_columns = [3, -2, -1]
-for col_index in percent_columns:
-    if final_result.shape[1] > abs(col_index):
-        col_name = final_result.columns[col_index]
-        final_result[col_name] = final_result[col_name].apply(
-            lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
-        )
-
-# 🧾 تغيير أسماء الأعمدة لو حبيت تضيفهم يدويًا
+percent_columns = [3, 4, 5]  # يفترض أن الأعمدة 4 و 5 هي On-Time و Sign Rate
 final_result = final_result.rename(columns={
     final_result.columns[4]: "On-Time",
     final_result.columns[5]: "Sign Rate"
 })
+for col_name in ["On-Time", "Sign Rate", final_result.columns[3]]:
+    if col_name in final_result.columns:
+        final_result[col_name] = final_result[col_name].apply(
+            lambda x: f"{float(x) * 100:.0f}%" if pd.notnull(x) and str(x).replace('.', '', 1).isdigit() else x
+        )
 
 # 🎨 تنسيق عرض الجدول
 st.markdown("""
