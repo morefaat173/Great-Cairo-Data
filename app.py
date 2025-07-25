@@ -82,16 +82,18 @@ st.subheader("🔄 Compare Shared Sub-categories (Total)")
 
 # ✅ استخراج الصفوف التي تحتوي على 'Total' بشكل مرن (مع تجاهل المسافات والحروف الكبيرة)
 # ✅ استخراج صفوف 'Total' من النسخة الأصلية للبيانات قبل تحويل العمود لتاريخ
-raw_df = pd.read_excel("on.xlsx")  # إعادة تحميل البيانات الأصلية
+# ✅ إعادة تحميل نسخة خام من البيانات بدون تعديل التاريخ
+raw_df = pd.read_excel("on.xlsx")
+
+# استخراج صفوف تحتوي على كلمة 'Total' في العمود الثالث
 total_rows = raw_df[raw_df[raw_df.columns[2]].astype(str).str.strip().str.lower() == "total"]
-total_rows = df[total_mask].copy()
 
 # 🔍 فلتر الفروع
 selected_branches = st.multiselect("📌 اختر الفروع لعرض صفوف 'Total':", sorted(total_rows[first_col].dropna().unique()))
 
 # ✅ تصفية النتائج حسب الفروع
 if selected_branches:
-    filtered_total_rows = total_rows[total_rows[first_col].isin(selected_branches)]
+filtered_total_rows = total_rows[total_rows[total_rows.columns[0]].isin(selected_branches)]
 else:
     filtered_total_rows = total_rows.copy()
 
