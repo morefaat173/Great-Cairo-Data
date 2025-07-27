@@ -7,7 +7,7 @@ from pathlib import Path
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
-# 🏎️ Logo and title text
+# 🏎️ Logo and title text with brand colors + shadow
 try:
     logo = Image.open("images.jpeg")
     col1, col2 = st.columns([1, 5])
@@ -16,14 +16,25 @@ try:
     with col2:
         st.markdown("""
         <div style='text-align: center; margin-top: 10px;'>
-            <h1 style='color: #8B0000; font-size: 60px; font-weight: bold; line-height: 65px; margin: 0;'>J&amp;T Express Egypt</h1>
-            <h2 style='color: #8B0000; font-size: 40px; font-weight: bold; margin: 0;'>Great Cairo RG</h2>
+            <h1 style='
+                color: #ED3237;
+                font-size: 60px;
+                font-weight: bold;
+                line-height: 65px;
+                margin: 0;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            '>J&amp;T Express Egypt</h1>
+            <h2 style='
+                color: #ED3237;
+                font-size: 40px;
+                font-weight: bold;
+                margin: 0;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            '>Great Cairo RG</h2>
         </div>
         """, unsafe_allow_html=True)
 except FileNotFoundError:
     st.warning("⚠️ Logo not found.")
-
-st.title("📊 Great Cairo Delivery Data")
 
 # 💕 Load Data
 df = pd.read_excel("on.xlsx")
