@@ -252,7 +252,7 @@ loss_df = pd.read_excel("疑似遗失Details35914420250727113730.xlsx")
 track_df = pd.read_excel("Track real-time monitoring(Details)35914420250727133830.xlsx")
 
 # 🧩 Tabs Layout
-tab1, tab2 = st.tabs(["🅿 Potential Loss", "📌 Track real-time"])
+tab1, tab2, tab3 = st.tabs(["🅿 Potential Loss", "📌 Track real-time", "🖼️ Daily Report Image"])
 
 # ---------------------------- TAB 1: Suspected Loss ---------------------------- #
 with tab1:
@@ -326,7 +326,7 @@ with tab2:
     st.header("📌 Track real-time")
 
     # Pivot Table (Always Visible)
-    st.subheader("📊 Track real-time 2025-07-27 16:26:06")
+    st.subheader("📊 Track real-time 2025-07-27 16:04:50")
     pivot_summary = track_df.pivot_table(index="latest operator station`s name",
                                          columns="Timeout type",
                                          values="Waybill",
@@ -350,3 +350,30 @@ with tab2:
         raw_output = BytesIO()
         df_filtered.to_excel(raw_output, index=False, engine='openpyxl')
         st.download_button("⬇ Download Filtered Raw Data", data=raw_output.getvalue(), file_name="filtered_raw_data.xlsx")
+from datetime import datetime
+from PIL import Image
+import os
+
+with tab3:
+    st.header("🖼️ Daily Report Image Viewer")
+
+    # Region selector
+    region = st.radio("Select Region:", ["Cairo", "Giza"], horizontal=True)
+
+    # Day selector
+    selected_day = st.selectbox("Select Day:", list(range(1, 32)))
+
+    # Get current month to use in filename
+    today = datetime.now()
+    formatted_day = f"{selected_day}-{today.month}"  # e.g. "6-7"
+
+    # Build the expected image filename
+    image_name = f"{formatted_day} {region}.jpg"
+    image_path = image_name  # ✅ Image is in the same directory as app.py
+
+    # Display the image if found
+    if os.path.exists(image_path):
+        image = Image.open(image_path)
+        st.image(image, caption=f"Daily Report - {region} ({formatted_day})", use_container_width=True)
+    else:
+        st.warning(f"⚠️ No image found for {region} on {formatted_day}. Expected: {image_name}")
