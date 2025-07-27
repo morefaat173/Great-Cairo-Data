@@ -148,7 +148,7 @@ if st.session_state.show_total_rows:
         st.warning("⚠️ No rows containing 'Total' found in the data.")
 # --------------------- Branch Performance Comparison Button ----------------------
 with st.expander("📊 Branch Performance Comparison"):
-    subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
+    subcategories_to_compare = st.multiselect("Select branch", sorted(df[second_col].dropna().unique()))
     metric_options = {
         "Receivable Amount": df.columns[3],
         "On-Time": df.columns[4],
