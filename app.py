@@ -191,7 +191,7 @@ with st.expander("📊 Branch Performance Comparison"):
             else:
                 st.warning("No matching data found for selected filters.")
 
-# --------------------- Performance Over Time Button ----------------------
+# --------------------- Branch Performance Comparison ----------------------
 if st.button("📊 Branch Performance Comparison"):
     plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
