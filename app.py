@@ -143,12 +143,12 @@ if st.session_state.show_total_rows:
             st.markdown("###📈 Branch Statistics Comparison")
             st.dataframe(filtered_total_rows, use_container_width=True)
         else:
-            st.info("ℹ️ Please select a area from the list to show data.")
+            st.info("ℹ️ Please select a branch from the list to show data.")
     else:
         st.warning("⚠️ No rows containing 'Total' found in the data.")
-# --------------------- Branch Performance Comparison Button ----------------------
+# --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📊 Branch Performance Comparison"):
-    subcategories_to_compare = st.multiselect("Select branch", sorted(df[second_col].dropna().unique()))
+    subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
     metric_options = {
         "Receivable Amount": df.columns[3],
         "On-Time": df.columns[4],
@@ -240,24 +240,106 @@ if st.button("📊 Branch Performance Comparison"):
     ax.tick_params(axis='y', colors='white')
     st.pyplot(fig)
 
-import os
-from PIL import Image
 import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+from io import BytesIO
 
-# --------------------- Daily Report Image Viewer using Toggle ----------------------
-show_images = st.toggle("🖼️ Show Daily Report Images")
+# 📦 Load Excel file
+df = pd.read_excel("疑似遗失Details35914420250727113730.xlsx")
 
-if show_images:
-    selected_day = st.selectbox("Select Day:", [str(i) for i in range(1, 32)])
-    selected_regions = st.multiselect("Select Region(s):", ["Cairo", "Giza"], default=["Cairo"])
+st.set_page_config(page_title="Suspected Loss Dashboard", layout="wide")
 
-    for region in selected_regions:
-        filename = f"{selected_day}-7 {region}.jpg"
-        image_path = os.path.join(filename)
+# 🧊 Title
+st.title("🅿 Potential loss")
 
-        st.markdown(f"#### 📍 Region: {region}")
-        try:
-            image = Image.open(image_path)
-            st.image(image, caption=f"📅 Report: {selected_day}/7 - {region}", use_container_width=True)
-        except FileNotFoundError:
-            st.warning(f"⚠️ Image not found for {region} on day {selected_day}.")
+# 📌 Summary of Not signed for 10 days & Unpicked back shipment
+st.subheader("📌 Summary: Not signed for 10 days & Unpicked back ")
+
+summary = df[df["Lost type"].isin(["Not signed for 10 days", "Unpicked back shipment"])]
+summary_grouped = summary.groupby(["Resp. BR", "Lost type"]).size().unstack(fill_value=0)
+
+# Ensure both columns exist
+for col in ["Not signed for 10 days", "Unpicked back shipment"]:
+    if col not in summary_grouped.columns:
+        summary_grouped[col] = 0
+
+summary_grouped["Total"] = summary_grouped["Not signed for 10 days"] + summary_grouped["Unpicked back shipment"]
+summary_grouped = summary_grouped[["Not signed for 10 days", "Unpicked back shipment", "Total"]]
+summary_grouped = summary_grouped.sort_values("Total", ascending=False)
+
+st.dataframe(summary_grouped)
+
+# 🧩 Inline Filters
+col1, col2 = st.columns(2)
+with col1:
+    branches = st.multiselect("Select Branch (Resp. BR):", options=df["Resp. BR"].dropna().unique())
+with col2:
+    lost_types = st.multiselect("Select Loss Type:", options=df["Lost type"].dropna().unique())
+
+# 🔍 Apply Filters (only for the summary table and download)
+filtered_df = df.copy()
+if branches:
+    filtered_df = filtered_df[filtered_df["Resp. BR"].isin(branches)]
+if lost_types:
+    filtered_df = filtered_df[filtered_df["Lost type"].isin(lost_types)]
+
+# 📋 Filtered Branch Data
+st.subheader("📋 Filtered Branch Data")
+st.dataframe(filtered_df)
+
+# ⬇️ Download Filtered Data
+output = BytesIO()
+filtered_df.to_excel(output, index=False, engine='openpyxl')
+st.download_button("⬇ Download Filtered Data", data=output.getvalue(), file_name="filtered_data.xlsx")
+
+# 📊 Bar Chart for ALL data (not affected by filters)
+st.subheader("📊 Lost type comparison")
+
+# Grouping and counting
+plot_counts = df.groupby(["Resp. BR", "Lost type"]).size().unstack(fill_value=0)
+plot_counts["Total"] = plot_counts.sum(axis=1)
+plot_counts = plot_counts[plot_counts["Total"] > 0]
+plot_counts = plot_counts.sort_values("Total", ascending=False)
+
+# Bar colors and setup
+fig, ax = plt.subplots(figsize=(10, 6))
+fig.patch.set_facecolor('#111111')
+ax.set_facecolor('#111111')
+
+bar_width = 0.4
+branches_list = plot_counts.index.tolist()
+x = range(len(branches_list))
+selected_types = df["Lost type"].dropna().unique()
+
+# Custom dark red tones
+colors = ['#8B0000', '#5A0000', '#B22222', '#CD5C5C', '#DC143C']
+
+for i, loss_type in enumerate(selected_types):
+    if loss_type in plot_counts.columns:
+        values = plot_counts[loss_type]
+        positions = [pos + (i - 0.5) * bar_width for pos in x]
+        bars = ax.barh(positions, values, height=bar_width, label=loss_type, color=colors[i % len(colors)])
+
+        for bar in bars:
+            width = bar.get_width()
+            if width > 0:
+                ax.text(
+                    width + 0.3,
+                    bar.get_y() + bar.get_height() / 2,
+                    f'{int(width)}',
+                    va='center', ha='left',
+                    color='white',
+                    fontsize=8  # Smaller font size
+                )
+
+# Axes and styling
+ax.set_yticks(x)
+ax.set_yticklabels(branches_list, color='white')
+ax.set_xlabel("Count", color='white')
+ax.set_title("Loss Types Count per Branch (All Data)", color='white', fontsize=14)
+ax.tick_params(axis='x', colors='white')
+ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
+
+# Show plot
+st.pyplot(fig)
