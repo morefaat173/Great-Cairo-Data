@@ -245,101 +245,108 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-# 📦 Load Excel file
-df = pd.read_excel("疑似遗失Details35914420250727113730.xlsx")
+st.set_page_config(page_title="Great Cairo Dashboard", layout="wide")
 
-st.set_page_config(page_title="Suspected Loss Dashboard", layout="wide")
+# 📂 Load the Excel files
+loss_df = pd.read_excel("疑似遗失Details35914420250727113730.xlsx")
+track_df = pd.read_excel("Track real-time monitoring(Details)35914420250727133830.xlsx")
 
-# 🧊 Title
-st.title("🅿 Potential loss")
+# 🧩 Tabs Layout
+tab1, tab2 = st.tabs(["🅿 Potential Loss", "📌 Track real-time"])
 
-# 📌 Summary of Not signed for 10 days & Unpicked back shipment
-st.subheader("📌 Summary: Not signed for 10 days & Unpicked back ")
+# ---------------------------- TAB 1: Suspected Loss ---------------------------- #
+with tab1:
 
-summary = df[df["Lost type"].isin(["Not signed for 10 days", "Unpicked back shipment"])]
-summary_grouped = summary.groupby(["Resp. BR", "Lost type"]).size().unstack(fill_value=0)
+    # Summary Pivot Table (Always Visible)
+    st.subheader("Summary")
+    summary_pivot = loss_df.pivot_table(index="Resp. BR", columns="Lost type", aggfunc="size", fill_value=0)
+    summary_pivot["Total"] = summary_pivot.sum(axis=1)
+    summary_pivot = summary_pivot.sort_values("Total", ascending=False)
+    st.dataframe(summary_pivot)
 
-# Ensure both columns exist
-for col in ["Not signed for 10 days", "Unpicked back shipment"]:
-    if col not in summary_grouped.columns:
-        summary_grouped[col] = 0
+    # Filters
+    col1, col2 = st.columns(2)
+    with col1:
+        branches = st.multiselect("Select Branch (Resp. BR):", options=loss_df["Resp. BR"].dropna().unique())
+    with col2:
+        lost_types = st.multiselect("Select Loss Type:", options=loss_df["Lost type"].dropna().unique())
 
-summary_grouped["Total"] = summary_grouped["Not signed for 10 days"] + summary_grouped["Unpicked back shipment"]
-summary_grouped = summary_grouped[["Not signed for 10 days", "Unpicked back shipment", "Total"]]
-summary_grouped = summary_grouped.sort_values("Total", ascending=False)
+    # Filtered Data
+    filtered_df = loss_df.copy()
+    if branches:
+        filtered_df = filtered_df[filtered_df["Resp. BR"].isin(branches)]
+    if lost_types:
+        filtered_df = filtered_df[filtered_df["Lost type"].isin(lost_types)]
 
-st.dataframe(summary_grouped)
+    # Table
+    st.subheader("📋 Branch Data")
+    st.dataframe(filtered_df)
 
-# 🧩 Inline Filters
-col1, col2 = st.columns(2)
-with col1:
-    branches = st.multiselect("Select Branch (Resp. BR):", options=df["Resp. BR"].dropna().unique())
-with col2:
-    lost_types = st.multiselect("Select Loss Type:", options=df["Lost type"].dropna().unique())
+    # Download
+    output = BytesIO()
+    filtered_df.to_excel(output, index=False, engine='openpyxl')
+    st.download_button("⬇ Download Filtered Data", data=output.getvalue(), file_name="filtered_data.xlsx")
 
-# 🔍 Apply Filters (only for the summary table and download)
-filtered_df = df.copy()
-if branches:
-    filtered_df = filtered_df[filtered_df["Resp. BR"].isin(branches)]
-if lost_types:
-    filtered_df = filtered_df[filtered_df["Lost type"].isin(lost_types)]
+    # Full Plot (not filtered)
+    st.subheader("📊 Lost type comparison")
+    plot_counts = loss_df.groupby(["Resp. BR", "Lost type"]).size().unstack(fill_value=0)
+    plot_counts["Total"] = plot_counts.sum(axis=1)
+    plot_counts = plot_counts[plot_counts["Total"] > 0].sort_values("Total", ascending=False)
 
-# 📋 Filtered Branch Data
-st.subheader("📋 Filtered Branch Data")
-st.dataframe(filtered_df)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    fig.patch.set_facecolor('#111111')
+    ax.set_facecolor('#111111')
+    bar_width = 0.4
+    branches_list = plot_counts.index.tolist()
+    x = range(len(branches_list))
+    selected_types = loss_df["Lost type"].dropna().unique()
+    colors = ['#8B0000', '#A52A2A', '#B22222', '#CD5C5C', '#DC143C']
 
-# ⬇️ Download Filtered Data
-output = BytesIO()
-filtered_df.to_excel(output, index=False, engine='openpyxl')
-st.download_button("⬇ Download Filtered Data", data=output.getvalue(), file_name="filtered_data.xlsx")
+    for i, loss_type in enumerate(selected_types):
+        if loss_type in plot_counts.columns:
+            values = plot_counts[loss_type]
+            positions = [pos + (i - 0.5) * bar_width for pos in x]
+            bars = ax.barh(positions, values, height=bar_width, label=loss_type, color=colors[i % len(colors)])
+            for bar in bars:
+                width = bar.get_width()
+                if width > 0:
+                    ax.text(width + 0.3, bar.get_y() + bar.get_height() / 2, f'{int(width)}',
+                            va='center', ha='left', color='white', fontsize=8)
 
-# 📊 Bar Chart for ALL data (not affected by filters)
-st.subheader("📊 Lost type comparison")
+    ax.set_yticks(x)
+    ax.set_yticklabels(branches_list, color='white')
+    ax.set_xlabel("Count", color='white')
+    ax.set_title("Loss Types Count per Branch (All Data)", color='white', fontsize=14)
+    ax.tick_params(axis='x', colors='white')
+    ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
+    st.pyplot(fig)
 
-# Grouping and counting
-plot_counts = df.groupby(["Resp. BR", "Lost type"]).size().unstack(fill_value=0)
-plot_counts["Total"] = plot_counts.sum(axis=1)
-plot_counts = plot_counts[plot_counts["Total"] > 0]
-plot_counts = plot_counts.sort_values("Total", ascending=False)
+# ---------------------------- TAB 2: Potential Loss ---------------------------- #
+with tab2:
+    st.header("📌 Track real-time")
 
-# Bar colors and setup
-fig, ax = plt.subplots(figsize=(10, 6))
-fig.patch.set_facecolor('#111111')
-ax.set_facecolor('#111111')
+    # Pivot Table (Always Visible)
+    st.subheader("📊 Track real-time 2025-07-27 16:04:50")
+    pivot_summary = track_df.pivot_table(index="latest operator station`s name",
+                                         columns="Timeout type",
+                                         values="Waybill",
+                                         aggfunc="count",
+                                         fill_value=0)
+    pivot_summary["Total Lost Types"] = pivot_summary.sum(axis=1)
+    pivot_summary = pivot_summary.sort_values("Total Lost Types", ascending=False)
+    st.dataframe(pivot_summary)
 
-bar_width = 0.4
-branches_list = plot_counts.index.tolist()
-x = range(len(branches_list))
-selected_types = df["Lost type"].dropna().unique()
+    # Expandable: Branch Filter + Raw Data Table + Download
+    with st.expander("🔍 View Full Raw Data & Download by Branch"):
+        branch_filter = st.multiselect("Select Branch :",
+                                       options=track_df["latest operator station`s name"].dropna().unique())
 
-# Custom dark red tones
-colors = ['#8B0000', '#5A0000', '#B22222', '#CD5C5C', '#DC143C']
+        df_filtered = track_df.copy()
+        if branch_filter:
+            df_filtered = df_filtered[df_filtered["latest operator station`s name"].isin(branch_filter)]
 
-for i, loss_type in enumerate(selected_types):
-    if loss_type in plot_counts.columns:
-        values = plot_counts[loss_type]
-        positions = [pos + (i - 0.5) * bar_width for pos in x]
-        bars = ax.barh(positions, values, height=bar_width, label=loss_type, color=colors[i % len(colors)])
+        st.dataframe(df_filtered)
 
-        for bar in bars:
-            width = bar.get_width()
-            if width > 0:
-                ax.text(
-                    width + 0.3,
-                    bar.get_y() + bar.get_height() / 2,
-                    f'{int(width)}',
-                    va='center', ha='left',
-                    color='white',
-                    fontsize=8  # Smaller font size
-                )
-
-# Axes and styling
-ax.set_yticks(x)
-ax.set_yticklabels(branches_list, color='white')
-ax.set_xlabel("Count", color='white')
-ax.set_title("Loss Types Count per Branch (All Data)", color='white', fontsize=14)
-ax.tick_params(axis='x', colors='white')
-ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
-
-# Show plot
-st.pyplot(fig)
+        raw_output = BytesIO()
+        df_filtered.to_excel(raw_output, index=False, engine='openpyxl')
+        st.download_button("⬇ Download Filtered Raw Data", data=raw_output.getvalue(), file_name="filtered_raw_data.xlsx")
