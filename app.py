@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 import matplotlib.pyplot as plt
+import os
+from pathlib import Path
 
 st.set_page_config(page_title="Great Cairo Delivery", layout="wide")
 
@@ -45,13 +47,9 @@ final_result = filtered_df[filtered_df[second_col] == selected_sub].copy()
 # 🗓️ Format date column
 if final_result.shape[1] > 2:
     date_col = final_result.columns[2]
-    def format_date(val):
-        try:
-            dt = pd.to_datetime(val)
-            return dt.strftime('%Y-%m-%d')
-        except:
-            return "Total"
-    final_result[date_col] = final_result[date_col].apply(format_date)
+    final_result[date_col] = final_result[date_col].apply(
+        lambda x: x.strftime('%Y-%m-%d') if pd.notnull(x) else "Total"
+    )
 
 # ✅ Format column 4 as numbers, and 5–6 as percentages
 if final_result.shape[1] > 3:
@@ -90,6 +88,7 @@ final_result = final_result.drop(columns=["DateOnly"], errors="ignore")
 st.dataframe(final_result, use_container_width=True)
 
 # --------------------- Compare All Shared Sub-categories Across Branches ----------------------
+# --------------------- Compare All Shared Sub-categories Across Branches ----------------------
 st.subheader("🌐 Aggregated Comparison of Area Branches")
 
 if "show_total_rows" not in st.session_state:
@@ -100,7 +99,7 @@ if st.button("🔹Area"):
 
 if st.session_state.show_total_rows:
     df_raw = pd.read_excel("on.xlsx")
-    
+
     # ✅ FIXED ERROR HERE
     total_rows = df_raw[df_raw[df_raw.columns[2]].astype(str).str.strip().str.lower() == "total"]
 
@@ -136,18 +135,15 @@ if st.session_state.show_total_rows:
             st.info("ℹ️ Please select a branch from the list to show data.")
     else:
         st.warning("⚠️ No rows containing 'Total' found in the data.")
-
 # --------------------- Flexible Sub-category Comparison Button ----------------------
 with st.expander("📊 Branch Performance Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
-
     metric_options = {
         "Receivable Amount": df.columns[3],
         "On-Time": df.columns[4],
         "Sign Rate": df.columns[5]
     }
     metric_choices = st.multiselect("Choose Metrics to Compare:", list(metric_options.keys()))
-
     df["DateOnly"] = df[df.columns[2]].dt.date
     unique_dates = df["DateOnly"].dropna().unique()
     selected_dates = st.multiselect("Select Dates for Comparison:", sorted(unique_dates))
@@ -191,7 +187,7 @@ with st.expander("📊 Branch Performance Comparison"):
             else:
                 st.warning("No matching data found for selected filters.")
 
-# --------------------- Branch Performance Comparison ----------------------
+# --------------------- Performance Over Time Button ----------------------
 if st.button("📊 Branch Performance Comparison"):
     plot_df = filtered_df[filtered_df[second_col] == selected_sub].copy()
 
@@ -210,8 +206,8 @@ if st.button("📊 Branch Performance Comparison"):
     ax.patch.set_alpha(0)
 
     dates = plot_df[plot_df.columns[2]]
-    ontime = plot_df[plot_df.columns[4]] * 100
-    signrate = plot_df[plot_df.columns[5]] * 100
+    ontime = pd.to_numeric(plot_df[plot_df.columns[4]], errors="coerce") * 100
+    signrate = pd.to_numeric(plot_df[plot_df.columns[5]], errors="coerce") * 100
     bar_width = 0.4
     x = range(len(dates))
 
@@ -232,3 +228,25 @@ if st.button("📊 Branch Performance Comparison"):
     ax.tick_params(axis='x', colors='white')
     ax.tick_params(axis='y', colors='white')
     st.pyplot(fig)
+
+import os
+from PIL import Image
+import streamlit as st
+
+# --------------------- Daily Report Image Viewer using Toggle ----------------------
+show_images = st.toggle("🖼️ Show Daily Report Images")
+
+if show_images:
+    selected_day = st.selectbox("Select Day:", [str(i) for i in range(1, 32)])
+    selected_regions = st.multiselect("Select Region(s):", ["Cairo", "Giza"], default=["Cairo"])
+
+    for region in selected_regions:
+        filename = f"{selected_day}-7 {region}.jpg"
+        image_path = os.path.join(filename)
+
+        st.markdown(f"#### 📍 Region: {region}")
+        try:
+            image = Image.open(image_path)
+            st.image(image, caption=f"📅 Report: {selected_day}/7 - {region}", use_container_width=True)
+        except FileNotFoundError:
+            st.warning(f"⚠️ Image not found for {region} on day {selected_day}.")
