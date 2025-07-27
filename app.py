@@ -143,10 +143,10 @@ if st.session_state.show_total_rows:
             st.markdown("###📈 Branch Statistics Comparison")
             st.dataframe(filtered_total_rows, use_container_width=True)
         else:
-            st.info("ℹ️ Please select a branch from the list to show data.")
+            st.info("ℹ️ Please select a area from the list to show data.")
     else:
         st.warning("⚠️ No rows containing 'Total' found in the data.")
-# --------------------- Flexible Sub-category Comparison Button ----------------------
+# --------------------- Branch Performance Comparison Button ----------------------
 with st.expander("📊 Branch Performance Comparison"):
     subcategories_to_compare = st.multiselect("Select Sub-categories:", sorted(df[second_col].dropna().unique()))
     metric_options = {
