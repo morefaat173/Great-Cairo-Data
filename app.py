@@ -332,7 +332,7 @@ with tab2:
                                          values="Waybill",
                                          aggfunc="count",
                                          fill_value=0)
-    pivot_summary["Total"] = pivot_summary.sum(axis=1)
+    pivot_summary["Total Lost Types"] = pivot_summary.sum(axis=1)
     pivot_summary = pivot_summary.sort_values("Total Lost Types", ascending=False)
     st.dataframe(pivot_summary)
 
