@@ -256,7 +256,7 @@ tab1, tab2, tab3 = st.tabs(["🅿 Potential Loss", "📌 Track real-time", "🖼
 
 # ---------------------------- TAB 1: Suspected Loss ---------------------------- #
 with tab1:
-    st.header("🅿 Potential Loss 2025-07-28 08:57:10")
+    st.header("🅿 Potential Loss 2025-07-29 09:45:38")
     # Summary Pivot Table (Always Visible)
     st.subheader("Summary")
     summary_pivot = loss_df.pivot_table(index="Resp. BR", columns="Lost type", aggfunc="size", fill_value=0)
@@ -326,7 +326,7 @@ with tab2:
     st.header("📌 Track real-time")
 
     # Pivot Table (Always Visible)
-    st.subheader("📊 Track real-time 2025-07-28 08:58:51")
+    st.subheader("📊 Track real-time 2025-07-29 09:45:38")
     pivot_summary = track_df.pivot_table(index="latest operator station`s name",
                                          columns="Timeout type",
                                          values="Waybill",
