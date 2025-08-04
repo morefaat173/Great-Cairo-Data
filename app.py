@@ -355,17 +355,22 @@ from PIL import Image
 import os
 
 with tab3:
+from datetime import datetime
+from PIL import Image
+import os
+
+with tab3:
     st.header("🖼️ Daily Report Image Viewer")
 
     # Region selector
     region = st.radio("Select Region:", ["Cairo", "Giza"], horizontal=True)
 
-    # Day selector
+    # Month and Day selector
+    selected_month = st.selectbox("Select Month:", [7, 8], index=0)
     selected_day = st.selectbox("Select Day:", list(range(1, 32)))
 
-    # Get current month to use in filename
-    today = datetime.now()
-    formatted_day = f"{selected_day}-{today.month}"  # e.g. "6-7"
+    # Format day-month string
+    formatted_day = f"{selected_day}-{selected_month}"  # e.g. "6-7" or "15-8"
 
     # Build the expected image filename
     image_name = f"{formatted_day} {region}.jpg"
