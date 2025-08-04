@@ -256,7 +256,7 @@ tab1, tab2, tab3 = st.tabs(["🅿 Potential Loss", "📌 Track real-time", "🖼
 
 # ---------------------------- TAB 1: Suspected Loss ---------------------------- #
 with tab1:
-    st.header("🅿 Potential Loss 2025-07-30 10:18:59")
+
     # Summary Pivot Table (Always Visible)
     st.subheader("Summary")
     summary_pivot = loss_df.pivot_table(index="Resp. BR", columns="Lost type", aggfunc="size", fill_value=0)
@@ -326,8 +326,8 @@ with tab2:
     st.header("📌 Track real-time")
 
     # Pivot Table (Always Visible)
-    st.subheader("📊 Track real-time 2025-07-30 10:18:59")
-    pivot_summary = track_df.pivot_table(index="latest operator stations name",
+    st.subheader("📊 Track real-time 2025-07-27 16:04:50")
+    pivot_summary = track_df.pivot_table(index="latest operator station`s name",
                                          columns="Timeout type",
                                          values="Waybill",
                                          aggfunc="count",
@@ -339,11 +339,11 @@ with tab2:
     # Expandable: Branch Filter + Raw Data Table + Download
     with st.expander("🔍 View Full Raw Data & Download by Branch"):
         branch_filter = st.multiselect("Select Branch :",
-                                       options=track_df["latest operator stations name"].dropna().unique())
+                                       options=track_df["latest operator station`s name"].dropna().unique())
 
         df_filtered = track_df.copy()
         if branch_filter:
-            df_filtered = df_filtered[df_filtered["latest operator stations name"].isin(branch_filter)]
+            df_filtered = df_filtered[df_filtered["latest operator station`s name"].isin(branch_filter)]
 
         st.dataframe(df_filtered)
 
@@ -376,4 +376,4 @@ with tab3:
         image = Image.open(image_path)
         st.image(image, caption=f"Daily Report - {region} ({formatted_day})", use_container_width=True)
     else:
-        st.warning(f"⚠️ No image found for {region} on {formatted_day}. Expected: {image_name}") 
+        st.warning(f"⚠️ No image found for {region} on {formatted_day}. Expected: {image_name}")
