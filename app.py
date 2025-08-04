@@ -327,7 +327,7 @@ with tab2:
 
     # Pivot Table (Always Visible)
     st.subheader("📊 Track real-time 2025-07-30 10:18:59")
-    pivot_summary = track_df.pivot_table(index="latest operator station`s name",
+    pivot_summary = track_df.pivot_table(index="latest operator stations name",
                                          columns="Timeout type",
                                          values="Waybill",
                                          aggfunc="count",
@@ -339,11 +339,11 @@ with tab2:
     # Expandable: Branch Filter + Raw Data Table + Download
     with st.expander("🔍 View Full Raw Data & Download by Branch"):
         branch_filter = st.multiselect("Select Branch :",
-                                       options=track_df["latest operator station`s name"].dropna().unique())
+                                       options=track_df["latest operator stations name"].dropna().unique())
 
         df_filtered = track_df.copy()
         if branch_filter:
-            df_filtered = df_filtered[df_filtered["latest operator station`s name"].isin(branch_filter)]
+            df_filtered = df_filtered[df_filtered["latest operator stations name"].isin(branch_filter)]
 
         st.dataframe(df_filtered)
 
@@ -355,22 +355,17 @@ from PIL import Image
 import os
 
 with tab3:
-from datetime import datetime
-from PIL import Image
-import os
-
-with tab3:
     st.header("🖼️ Daily Report Image Viewer")
 
     # Region selector
     region = st.radio("Select Region:", ["Cairo", "Giza"], horizontal=True)
 
-    # Month and Day selector
-    selected_month = st.selectbox("Select Month:", [7, 8], index=0)
+    # Day selector
     selected_day = st.selectbox("Select Day:", list(range(1, 32)))
 
-    # Format day-month string
-    formatted_day = f"{selected_day}-{selected_month}"  # e.g. "6-7" or "15-8"
+    # Get current month to use in filename
+    today = datetime.now()
+    formatted_day = f"{selected_day}-{today.month}"  # e.g. "6-7"
 
     # Build the expected image filename
     image_name = f"{formatted_day} {region}.jpg"
@@ -381,4 +376,4 @@ with tab3:
         image = Image.open(image_path)
         st.image(image, caption=f"Daily Report - {region} ({formatted_day})", use_container_width=True)
     else:
-        st.warning(f"⚠️ No image found for {region} on {formatted_day}. Expected: {image_name}")
+        st.warning(f"⚠️ No image found for {region} on {formatted_day}. Expected: {image_name}") 
