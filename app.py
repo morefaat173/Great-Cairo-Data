@@ -258,7 +258,7 @@ tab1, tab2, tab3 = st.tabs(["🅿 Potential Loss", "📌 Track real-time", "🖼
 with tab1:
 
     # Summary Pivot Table (Always Visible)
-    st.subheader("Summary")
+    st.subheader("Summary 2025-08-10 07:09:10")
     summary_pivot = loss_df.pivot_table(index="Resp. BR", columns="Lost type", aggfunc="size", fill_value=0)
     summary_pivot["Total"] = summary_pivot.sum(axis=1)
     summary_pivot = summary_pivot.sort_values("Total", ascending=False)
@@ -326,7 +326,7 @@ with tab2:
     st.header("📌 Track real-time")
 
     # Pivot Table (Always Visible)
-    st.subheader("📊 Track real-time 2025-07-27 16:04:50")
+    st.subheader("📊 Track real-time 2025-08-10 07:09:10")
     pivot_summary = track_df.pivot_table(index="latest operator station`s name",
                                          columns="Timeout type",
                                          values="Waybill",
@@ -377,3 +377,4 @@ with tab3:
         st.image(image, caption=f"Daily Report - {region} ({formatted_day})", use_container_width=True)
     else:
         st.warning(f"⚠️ No image found for {region} on {formatted_day}. Expected: {image_name}")
+
